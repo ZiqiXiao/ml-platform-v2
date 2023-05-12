@@ -5,7 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch import optim
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from app.models.utils import cal_metrics, data_preprocess
+from app.models.utils import cal_metrics, data_preprocess, load_dataset
 import numpy as np
 from config import Config
 
@@ -59,23 +59,26 @@ class Model:
         self.socketio = socketio
         self.default_params = Config.DEFAULT_PARAMS['mlp'].copy()
         self.default_params.update(Config.DEFAULT_PARAMS_UNDER['mlp'])
+        self.metric_data = {
+            'modelName': 'mlp',
+            'epoch': [],
+            'trainLoss': [],
+            'validLoss': [],
+        }
 
     def log_message(self, message):
         if self.socketio is not None:
             self.socketio.emit('training_log', {'message': message})
 
-    def load_dataset(self, dataset_path):
-        return pd.read_csv(dataset_path)
-
     def train(self, dataset_path, label, custom_params={}):
         # 加载数据集
-        dataset = self.load_dataset(dataset_path)
+        dataset = load_dataset(dataset_path)
         self.app.logger.info('dataset loaded')
 
         # 设置模型参数
         self.default_params.update(custom_params)
         train_size = self.default_params.get('train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
-        self.default_params.pop('train_size')
+        # self.default_params.pop('train_size')
         print(train_size)
 
         # 对数据集进行预处理，例如划分训练集和验证集
@@ -83,8 +86,22 @@ class Model:
         self.app.logger.info('dataset split')
         train_dataset = MyDataset(train_X, train_y)
         valid_dataset = MyDataset(valid_X, valid_y)
-        train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-        valid_dataloader = DataLoader(valid_dataset, batch_size=64, shuffle=False)
+        def seed_worker(worker_id):
+            worker_seed = torch.initial_seed() % 2 ** 32
+            np.random.seed(worker_seed)
+            random.seed(worker_seed)
+
+        # 创建DataLoader
+        train_dataloader = DataLoader(train_dataset,
+                                      batch_size=64,
+                                      shuffle=True,
+                                      worker_init_fn=seed_worker,
+                                      generator=torch.Generator().manual_seed(0))
+        valid_dataloader = DataLoader(valid_dataset,
+                                      batch_size=64,
+                                      shuffle=False,
+                                      worker_init_fn=seed_worker,
+                                      generator=torch.Generator().manual_seed(0))
         self.app.logger.info('dataset preprocessed')
 
         # 设置模型参数
@@ -110,23 +127,35 @@ class Model:
             y_true = np.array([])
             y_pred = np.array([])
             with torch.no_grad():
-                for inputs, targets in dataloader:
-                    outputs = model(inputs)
-                    y_true = np.append(y_true, targets.numpy().flatten())
-                    y_pred = np.append(y_pred, outputs.numpy().flatten())
+                for eval_inputs, eval_targets in dataloader:
+                    eval_outputs = model(eval_inputs)
+                    y_true = np.append(y_true, eval_targets.numpy().flatten())
+                    y_pred = np.append(y_pred, eval_outputs.numpy().flatten())
+                    eval_loss = criterion(eval_outputs, eval_targets)
 
             metrics = cal_metrics(y_true, y_pred, type=type)
-            return metrics
+            return metrics, float(eval_loss)
 
         self.app.logger.info('training started')
         # 训练模型
-        self.model.train()
         best_acc = 0.0
         best_train_metrics = {}
         best_valid_metrics = {}
+        torch.manual_seed(42)
+
+        self.app.logger.info(self.model.fc3.weight)
+
+        for layer in self.model.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+        self.app.logger.info(self.model.fc3.weight)
+
         for epoch in range(num_epochs):
+            self.model.train()
             for i, (inputs, targets) in enumerate(train_dataloader):
                 # 向前传播
+
                 outputs = self.model(inputs)
                 loss = criterion(outputs, targets)
 
@@ -136,24 +165,27 @@ class Model:
                 optimizer.step()
 
             # 计算训练集和验证集的指标
-            train_metrics = eval_model(self.model, train_dataloader, type='train')
-            valid_metrics = eval_model(self.model, valid_dataloader, type='valid')
-            best_acc = max(best_acc, valid_metrics['valid_acc'])
+            train_metrics, train_loss = eval_model(self.model, train_dataloader, type='train')
+            valid_metrics, valid_loss = eval_model(self.model, valid_dataloader, type='valid')
+            best_acc = max(best_acc, valid_metrics['acc'])
 
-            if best_acc == valid_metrics['valid_acc']:
+            if best_acc == valid_metrics['acc']:
                 best_train_metrics = train_metrics
                 best_valid_metrics = valid_metrics
                 best_model = copy.deepcopy(self.model)
 
+            self.metric_data['epoch'].append(epoch)
+            self.metric_data['trainLoss'].append(train_loss)
+            self.metric_data['validLoss'].append(valid_loss)
+
             progress = (epoch + 1) / num_epochs * 100
-            self.socketio.emit('training_progress', {'modelName': 'mlp', 'progress': progress})
+            self.socketio.emit('train-message', {'modelName': 'mlp', 'progress': progress})
             # print(f'Epoch [{epoch}/{num_epochs}]')
 
-        best_valid_metrics.update(best_train_metrics)
-        self.socketio.emit('model_evaluation',
-                           {'modelName': 'mlp',
-                            'metrics': best_valid_metrics
-                            })
+        self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
+        self.app.logger.info(self.metric_data)
+        self.app.logger.info(self.model.fc3.weight)
+        self.socketio.emit('eval-message', self.metric_data)
         # 返回best_iter模型
         return best_model
 
@@ -169,7 +201,7 @@ class Model:
         if self.model is None:
             self.app.logger.warning("Model not trained yet. Train the model before making predictions.")
         self.app.logger.info('predicting ... ')
-        data = self.load_dataset(dataset_path)
+        data = load_dataset(dataset_path)
         data = torch.tensor(data.values, dtype=torch.float32)
         self.model.eval()
         with torch.no_grad():

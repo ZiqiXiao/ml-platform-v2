@@ -79,7 +79,7 @@ class Config:
                     'colsample_bytree': 0.8,
                     'objective': 'reg:squarederror', },
 
-        'mlp': {'num_epochs': 50,
+        'mlp': {'num_epochs': 200,
                 'hidden_size': 64,
                 'lr': 0.01, },
 

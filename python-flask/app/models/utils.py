@@ -23,12 +23,14 @@ def cal_metrics(y_true, y_pred, type='train'):
     mae = mean_absolute_error(y_true, y_pred)
 
     r2 = r2_score(y_true, y_pred)
+
     return {
-        f'{type}_acc': float(acc),
-        f'{type}_mse': float(mse),
-        f'{type}_mae': float(mae),
-        f'{type}_rmse': float(rmse),
-        f'{type}_r2': float(r2)
+        'dataset': f'{type}',
+        'acc': acc,
+        'mse': float(mse),
+        'mae': float(mae),
+        'rmse': float(rmse),
+        'r2': float(r2)
     }
 
 

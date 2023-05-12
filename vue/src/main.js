@@ -15,12 +15,16 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import store from "./store";
 import router from "./router";
+// import {BootstrapVue} from "bootstrap-vue";
+// import 'bootstrap/dist/css/bootstrap.css';
+// import 'bootstrap-vue/dist/bootstrap-vue.css';
 import "./assets/css/nucleo-icons.css";
 import "./assets/css/nucleo-svg.css";
 import SoftUIDashboard from "./soft-ui-dashboard";
 
 createApp(App)
-    .use(store)
-    .use(router)
-    .use(SoftUIDashboard)
-    .mount('#app')
+  .use(store)
+  .use(router)
+  // .use(BootstrapVue)
+  .use(SoftUIDashboard)
+  .mount('#app')

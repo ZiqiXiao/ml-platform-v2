@@ -90,18 +90,11 @@ class Model:
             callbacks=[progress_callback]
         )
 
+        train_metrics = cal_metrics(np.array(train_y), np.array(self.model.predict(dtrain)), type='train')
+        valid_metrics = cal_metrics(np.array(valid_y), np.array(self.model.predict(dvalid)), type='valid')
+
+        self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
         self.socketio.emit('eval-message', self.metric_data)
-
-        train_metrics = cal_metrics(np.array(train_y), np.array(
-            self.model.predict(dtrain)), type='train')
-        valid_metrics = cal_metrics(np.array(valid_y), np.array(
-            self.model.predict(dvalid)), type='valid')
-        valid_metrics.update(train_metrics)
-
-        self.socketio.emit('model_evaluation',
-                           {'modelName': 'xgboost',
-                            'metrics': valid_metrics
-                            })
 
         # print('training successfully')
         self.app.logger.info('training successfully')

@@ -7,86 +7,48 @@
         <progress :value="chart.progress" :max="100" show-progress></progress>
       </div>
       <div class="card-body">
-        <div class="chart-container">
-          <h4>Loss</h4>
-          <!-- <canvas :ref="'chart-' + chart.name" class="chart-canvas"></canvas> -->
-          <Line :ref="'chart-' + chart.name" :data="chart.chartData" :options="chartOptions" />
-        </div>
+        <LossChart v-if="chart.hasLossChart" :chart-name="chart.name" :chart-data="chart.chartData" />
+        <MetricTable v-if="chart.chartData" :table-data="chart.chartData.metrics" />
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import { Line } from 'vue-chartjs';
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
-import ServiceRoute from "@/utils/service-route";
-import ModelName from "@/utils/ModelName";
-import { io } from "socket.io-client";
-import axios from "axios";
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+<script>
+
+import LossChart from "@/views/components/LossChart.vue";
+import ModelName from "@/utils/ModelName";
+import {io} from "socket.io-client";
+import ServiceRoute from "@/utils/service-route";
+import axios from "axios";
+import MetricTable from "@/views/components/MetricTable.vue";
 
 export default {
   components: {
-    Line
+    LossChart,
+    MetricTable,
   },
   emits: ['start-training'],
   data() {
     return {
-      socket: null,
-      modelName: ModelName,
-      charts: [],
-      model: null,
       filePath: null,
-      chartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            type: "linear",
-            display: true,
-            scaleLabel: {
-              display: true,
-              labelString: "Epoch",
-            },
-          },
-          y: {
-            type: "linear",
-            display: true,
-            scaleLabel: {
-              display: true,
-              labelString: "Loss",
-            },
-            beginAtZero: true,
-          }
-        }
-      },
-    };
+      model: null,
+      charts: [],
+      modelName: ModelName,
+    }
   },
 
   created() {
     this.model = JSON.parse(this.$route.params.model);
     this.filePath = this.$route.params.filePath;
-
     Object.entries(this.model).forEach(([key,]) => {
       this.charts.push({
-        name: key,
-        progress: 0,
-        chartData: {
-          labels: [],
-          datasets: [
-            {
-              data: [],
-              label: "Train Loss"
-            },
-            {
-              data: [],
-              label: "Valid Loss"
-            }
-          ],
+          name: key,
+          progress: 0,
+          hasLossChart: false,
+          chartData: null
         },
-      },
       );
     });
   },
@@ -98,10 +60,9 @@ export default {
       this.initSocket();
     } catch (error) {
       console.error("Error:", error);
-    };
-
-
+    }
   },
+
   methods: {
     initSocket() {
       this.socket = io(ServiceRoute["python-flask"]);
@@ -114,15 +75,16 @@ export default {
         if (chart) {
           // console.log("Train message:", nonReactiveData);
           chart.progress = nonReactiveData.progress;
-        };
+        }
       });
 
       this.socket.on("eval-message", (response) => {
         const nonReactiveData = JSON.parse(JSON.stringify(response));
 
         const chart = this.charts.find((chart) => chart.name === nonReactiveData.modelName);
-        if (chart) {
+        if (chart && nonReactiveData.epoch.length > 0) {
           // console.log("Train message:", nonReactiveData);
+          chart.hasLossChart = true;
           chart.chartData = {
             labels: nonReactiveData.epoch,
             datasets: [
@@ -135,17 +97,19 @@ export default {
                 label: "Valid Loss"
               }
             ],
+            metrics: nonReactiveData.metrics
           };
-        };
-      })
+        } else if (chart) {
+          chart.chartData = {
+            metrics: nonReactiveData.metrics
+          };
 
+        }
+        console.log(this.charts)
+        // console.log("Eval message:", nonReactiveData.metrics);
+        // console.log("Chart data:", this.charts)
+      });
     },
-
-    updateArray(oldArray, newData) {
-      oldArray.push(newData);
-      return oldArray;
-    },
-
     async sendTrainRequest() {
       if (this.filePath && this.model) {
         const requestData = {
@@ -168,14 +132,12 @@ export default {
         alert("模型参数未正确传递！");
       }
     },
-  }
+  },
 };
 </script>
 
 <style scoped>
-.chart-container {
-  width: 500px;
-  height: 400px;
-  margin-bottom: 50px;
+.card {
+  margin-bottom: 20px;
 }
 </style>

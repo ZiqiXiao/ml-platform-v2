@@ -1,7 +1,7 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-from app.models.utils import cal_metrics, data_preprocess
+from app.models.utils import cal_metrics, data_preprocess, load_dataset
 import os
 import joblib
 import pandas as pd
@@ -19,17 +19,20 @@ class Model:
         self.socketio = socketio
         self.default_params = Config.DEFAULT_PARAMS['lr'].copy()
         self.default_params.update(Config.DEFAULT_PARAMS_UNDER['lr'])
+        self.metric_data = {
+            'modelName': 'lr',
+            'epoch': [],
+            'trainLoss': [],
+            'validLoss': [],
+        }
 
     def log_message(self, message):
         if self.socketio is not None:
             self.socketio.emit('training_log', {'message': message})
 
-    def load_dataset(self, dataset_path):
-        return pd.read_csv(dataset_path)
-
     def train(self, dataset_path, label, custom_params={}):
         # 加载数据集
-        dataset = self.load_dataset(dataset_path)
+        dataset = load_dataset(dataset_path)
         self.app.logger.info('dataset loaded')
 
         # 设置模型参数
@@ -48,14 +51,10 @@ class Model:
 
         train_metrics = cal_metrics(train_y, self.model.predict(train_X), type='train')
         valid_metrics = cal_metrics(valid_y, self.model.predict(valid_X), type='valid')
-        valid_metrics.update(train_metrics)
 
-        self.socketio.emit('model_evaluation', 
-                               {'modelName': 'lr',
-                                'metrics': valid_metrics
-                                })
-
-        self.socketio.emit('training_progress', {'modelName': 'lr', 'progress': 100})
+        self.socketio.emit('train-message', {'modelName': 'lr', 'progress': 100})
+        self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
+        self.socketio.emit('eval-message', self.metric_data)
         self.app.logger.info('training successfully')
         return self.model
 
@@ -63,7 +62,7 @@ class Model:
         if self.model is None:
             self.app.logger.info("Model not trained yet. Train the model before making predictions.")
         self.app.logger.info('predicting ... ')
-        data = self.load_dataset(dataset_path)
+        data = load_dataset(dataset_path)
         predicted = self.model.predict(data)
         return predicted
 
