@@ -45,7 +45,7 @@ class Model:
         self.app.logger.info('dataset split')
 
         # 训练模型
-        self.app.logger.info('training model ... ')
+        self.app.logger.info('training model lr ... ')
         self.model = LinearRegression(**self.default_params)
         self.model.fit(train_X, train_y)
 

@@ -9,6 +9,8 @@ import SignIn from "@/views/SignIn.vue";
 import SignUp from "@/views/SignUp.vue";
 import TrainModel from "@/views/Train.vue";
 import TrainResult from "@/views/TrainResult.vue";
+import Predict from "@/views/Predict.vue";
+import PredictResult from "@/views/PredictResult.vue";
 
 const routes = [
   {
@@ -62,10 +64,20 @@ const routes = [
     component: TrainModel,
   },
   {
-    path: "/train-result/:model/:filePath",
+    path: "/train-result/:model/:filePath/:label",
     name: "Train Result",
     component: TrainResult,
     meta: { isFromTrain: false }
+  },
+  {
+    path: "/predict",
+    name: "Predict",
+    component: Predict,
+  },
+  {
+    path: "/predict-result/:modelPath/:filePath",
+    name: "Predict Result",
+    component: PredictResult,
   }
 ];
 

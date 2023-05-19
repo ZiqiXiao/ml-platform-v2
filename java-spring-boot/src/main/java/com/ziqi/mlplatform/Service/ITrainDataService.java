@@ -22,4 +22,6 @@ public interface ITrainDataService {
     Optional<TrainData> findByFileName(String fileName);
 
     TrainData updateTemplateName(Long id, String templateName);
+
+    TrainData getTemplateByName(String templateName);
 }

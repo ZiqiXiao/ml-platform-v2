@@ -40,10 +40,24 @@ public class TrainDataController {
         return ResponseEntity.ok(uploadFile);
     }
 
-    @GetMapping("/get-by-name/{modelName}")
-    public ResponseEntity<TrainData> getModelByModelName(@PathVariable String modelName) {
-        TrainData uploadFile = trainDataService.getUploadFileByName(modelName);
-        return ResponseEntity.ok(uploadFile);
+    @GetMapping("/get-by-name/{fileName}")
+    public ResponseEntity<?> getUploadFileByName(@PathVariable String fileName) {
+        try{
+            TrainData uploadFile = trainDataService.getUploadFileByName(fileName);
+            return ResponseEntity.ok(uploadFile);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Model not found with model name: " + fileName);
+        }
+    }
+
+    @GetMapping("/get-template-by-name/{templateName}")
+    public ResponseEntity<?> getTemplateByName(@PathVariable String templateName) {
+        try{
+            TrainData uploadFile = trainDataService.getTemplateByName(templateName);
+            return ResponseEntity.ok(uploadFile);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Model not found with model name: " + templateName);
+        }
     }
 
     @PostMapping("/update-model-name")
@@ -63,4 +77,5 @@ public class TrainDataController {
         TrainData updateModel = trainDataService.updateTemplateName(Long.valueOf(request.getId()), request.getNewName());
         return ResponseEntity.ok(updateModel);
     }
+
 }

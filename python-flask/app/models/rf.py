@@ -45,7 +45,7 @@ class Model:
         self.app.logger.info('dataset split')
 
         # 训练模型
-        self.app.logger.info('training model ... ')
+        self.app.logger.info('training model rf ... ')
         self.model = RandomForestRegressor(**self.default_params)
         self.model.fit(train_X, train_y)
 

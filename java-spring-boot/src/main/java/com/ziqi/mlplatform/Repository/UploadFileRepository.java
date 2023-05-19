@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface UploadFileRepository extends JpaRepository<TrainData, Long> {
     Optional<TrainData> findByFileName(String fileName);
+
+    Optional<TrainData> findByTemplateName(String templateName);
 }

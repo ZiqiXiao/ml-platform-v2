@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.List;
 
@@ -23,8 +25,9 @@ public class TrainData {
     private String filePath;
     private String templateName;
     private String templatePath;
-    @OneToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.EAGER)
     @JoinColumn(name = "upload_file_id", referencedColumnName = "id")
     @JsonIgnore
+    @OnDelete(action = OnDeleteAction.NO_ACTION)
     private List<Model> models;
 }

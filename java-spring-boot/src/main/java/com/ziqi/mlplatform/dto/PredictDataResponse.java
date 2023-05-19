@@ -1,6 +1,5 @@
 package com.ziqi.mlplatform.dto;
 
-import com.ziqi.mlplatform.Model.TrainData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,10 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ModelResponse {
+public class PredictDataResponse {
     private Long id;
-    private String modelName;
-    private String modelPath;
-    private String modelClass;
-    private TrainData uploadFile;
+    private String fileName;
+    private String filePath;
 }

@@ -5,6 +5,7 @@ import com.ziqi.mlplatform.Model.TrainData;
 import com.ziqi.mlplatform.Service.IModelService;
 import com.ziqi.mlplatform.Service.ITrainDataService;
 import com.ziqi.mlplatform.dto.ModelResponse;
+import com.ziqi.mlplatform.dto.SaveModelRequest;
 import com.ziqi.mlplatform.dto.UpdateNameRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,10 +29,16 @@ public class ModelController {
         return ResponseEntity.ok("Model Service is up and running!");
     }
 
-    @PostMapping("/create")
+    @PostMapping("/create-with-file")
     @ResponseStatus(HttpStatus.CREATED)
-    public Model createModel(@RequestBody Model model) {
-        return modelService.createModel(model);
+    public Model createModelWithFile(@RequestBody Model model) {
+        return modelService.createModelWithFile(model);
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createModel(@RequestBody SaveModelRequest saveModelRequest) {
+        Model model = modelService.createModel(saveModelRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
     @GetMapping("/get-all")

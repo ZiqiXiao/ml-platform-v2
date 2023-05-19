@@ -4,13 +4,13 @@
     class="w-auto h-auto collapse navbar-collapse max-height-vh-100 h-100"
   >
     <ul class="navbar-nav">
-      <li class="nav-item">
-        <sidenav-collapse nav-text="Dashboard" :to="{ name: 'Dashboard' }">
-          <template #icon>
-            <icon name="dashboard" />
-          </template>
-        </sidenav-collapse>
-      </li>
+<!--      <li class="nav-item">-->
+<!--        <sidenav-collapse nav-text="Dashboard" :to="{ name: 'Dashboard' }">-->
+<!--          <template #icon>-->
+<!--            <icon name="dashboard" />-->
+<!--          </template>-->
+<!--        </sidenav-collapse>-->
+<!--      </li>-->
       <li class="nav-item">
         <sidenav-collapse :nav-text="pageName['Models']" :to="{ name: 'Models' }">
           <template #icon>
@@ -25,6 +25,13 @@
           </template>
         </sidenav-collapse>
       </li>
+      <li class="nav-item">
+        <sidenav-collapse :nav-text="pageName['Predict']" :to="{ name: 'Predict' }">
+          <template #icon>
+            <icon name="tables" />
+          </template>
+        </sidenav-collapse>
+      </li>
       <!-- <li class="nav-item">
         <sidenav-collapse :nav-text="pageName['Train Result']" :to="{ name: 'Train Result', params: {model : {}, filePath: ''}}">
           <template #icon>
@@ -33,20 +40,20 @@
         </sidenav-collapse>
       </li> -->
 
-      <li class="nav-item">
-        <sidenav-collapse nav-text="Virtual Reality" :to="{ name: 'Virtual Reality' }">
-          <template #icon>
-            <icon name="virtual-reality" />
-          </template>
-        </sidenav-collapse>
-      </li>
-      <li class="nav-item">
-        <sidenav-collapse nav-text="RTL" :to="{ name: 'Rtl' }">
-          <template #icon>
-            <icon name="rtl-page" />
-          </template>
-        </sidenav-collapse>
-      </li>
+<!--      <li class="nav-item">-->
+<!--        <sidenav-collapse nav-text="Virtual Reality" :to="{ name: 'Virtual Reality' }">-->
+<!--          <template #icon>-->
+<!--            <icon name="virtual-reality" />-->
+<!--          </template>-->
+<!--        </sidenav-collapse>-->
+<!--      </li>-->
+<!--      <li class="nav-item">-->
+<!--        <sidenav-collapse nav-text="RTL" :to="{ name: 'Rtl' }">-->
+<!--          <template #icon>-->
+<!--            <icon name="rtl-page" />-->
+<!--          </template>-->
+<!--        </sidenav-collapse>-->
+<!--      </li>-->
 <!--      <li class="mt-3 nav-item">
         <h6
           class="text-xs ps-4 text-uppercase font-weight-bolder opacity-6"

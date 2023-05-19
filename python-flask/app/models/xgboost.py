@@ -76,7 +76,7 @@ class Model:
 
         # 训练模型
         # print('training model ... ')
-        self.app.logger.info('training model ... ')
+        self.app.logger.info('training model xgb ... ')
 
         progress_callback = TrainingProgressCallback(
             num_boost_round, self.socketio, self.metric_data)
@@ -98,7 +98,7 @@ class Model:
 
         # print('training successfully')
         self.app.logger.info('training successfully')
-        return self.model, self.metric_data
+        return self.model
 
     def predict(self, dataset_path):
         if self.model is None:
@@ -119,4 +119,4 @@ class Model:
 
     def load_model(self, model_path):
         self.model = joblib.load(model_path)
-        self.app.logger.info('model loaded')
+        self.app.logger.info('model loaded' + str(self.model))

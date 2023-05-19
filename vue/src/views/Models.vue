@@ -1,8 +1,11 @@
 <template>
-  <div class="py-4 container-fluid">
-    <div class="row">
-      <div class="col-12">
-        <model-table />
+  <div>
+    <h2>模型列表</h2>
+    <div class="py-4 container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <model-table />
+        </div>
       </div>
     </div>
   </div>

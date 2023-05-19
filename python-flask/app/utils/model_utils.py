@@ -48,7 +48,7 @@ def train_scheduler(
                     p[idx] = Config.DEFAULT_PARAMS[m][idx]
             model = training(app, filename, m, label, p, socketio)
             model_dict[m] = model
-
+        model_dict['label'] = label
         # socketio.emit('training-finished')
         return model_dict
     except Exception as e:
@@ -61,7 +61,7 @@ def training(app, filename, model_class, label='label', param=None, socketio=Non
     app.logger.info(
         f"Training {model_class} model with {filename} dataset and label {label}")
     # Load the dataset from the uploaded file
-    dataset_path = os.path.join(Config.UPLOAD_TRAIN_FOLDER, filename)
+    dataset_path = os.path.join(Config.UPLOAD_TMP_TRAIN_FOLDER, filename)
 
     # Load the specified model module
     model_module_name = Config.MODEL_STRUCTURE[model_class]
@@ -77,12 +77,11 @@ def training(app, filename, model_class, label='label', param=None, socketio=Non
     return model_file
 
 
-def predict(app, filename, model_class, model_name, model_path, socketio=None):
+def predict(app, file_path, model_path, socketio=None):
     # Load the dataset from the uploaded file
-    dataset_path = os.path.join(Config.UPLOAD_PREDICT_FOLDER, filename)
-
-    # Load the specified model module
+    model_class = model_path.split(os.sep)[-2]
     model_module_name = Config.MODEL_STRUCTURE[model_class]
+
     model_module = importlib.import_module(model_module_name)
 
     # Initialize the model
@@ -91,20 +90,16 @@ def predict(app, filename, model_class, model_name, model_path, socketio=None):
     model.load_model(model_path)
     # Predict
     try:
-        result = model.predict(dataset_path)
+        result = model.predict(file_path)
     except Exception as e:
         app.logger.error(f"Predict Error: {str(e)}\n{traceback.format_exc()}")
-        socketio.emit('training_log', {
-                      'message': f'Error: {str(e)}\n{traceback.format_exc()}'})
         return
 
     app.logger.info(f"Predict Success")
 
     result = pd.DataFrame(result, columns=['prediction'])
     # Save the result to the server
-    save_filename = f'{datetime.now().strftime("%Y%m%d%H%M%S")}-{filename.split(".")[0]}.csv'
+    save_filename = f'{datetime.now().strftime("%Y%m%d%H%M%S")}-{file_path.split(os.sep)[-1]}.csv'
     result_path = os.path.join(Config.PREDICT_RESULT_FOLDER, save_filename)
     result.to_csv(result_path, index=False)
-
-    socketio.emit('training_log', {
-                  'message': '预测成功', 'result_path': save_filename})
+    return result['prediction'].tolist(), result_path

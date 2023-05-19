@@ -11,6 +11,22 @@
         <MetricTable v-if="chart.chartData" :table-data="chart.chartData.metrics" />
       </div>
     </div>
+    <div class="card">
+      <div class="card-header">
+        <h3>总体结果</h3>
+      </div>
+      <div class="card-body">
+        <MetricTableSum v-if="metricsSum.length" :metrics-sum="metricsSum" />
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h3>保存模型</h3>
+      </div>
+      <div class="card-body">
+        <ModelSave :metrics-sum="metricsSum" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -23,31 +39,41 @@ import {io} from "socket.io-client";
 import ServiceRoute from "@/utils/service-route";
 import axios from "axios";
 import MetricTable from "@/views/components/MetricTable.vue";
+import MetricTableSum from "@/views/components/MetricTableSum.vue";
+import ModelSave from "@/views/components/ModelSave.vue";
 
 export default {
+  name: "TrainResult",
   components: {
     LossChart,
     MetricTable,
+    MetricTableSum,
+    ModelSave,
   },
+
   emits: ['start-training'],
+
   data() {
     return {
       filePath: null,
       model: null,
+      label:null,
       charts: [],
       modelName: ModelName,
+      metricsSum: [],
     }
   },
 
   created() {
     this.model = JSON.parse(this.$route.params.model);
     this.filePath = this.$route.params.filePath;
+    this.label = this.$route.params.label;
     Object.entries(this.model).forEach(([key,]) => {
       this.charts.push({
-          name: key,
-          progress: 0,
-          hasLossChart: false,
-          chartData: null
+        name: key,
+        progress: 0,
+        hasLossChart: false,
+        chartData: null,
         },
       );
     });
@@ -61,6 +87,10 @@ export default {
     } catch (error) {
       console.error("Error:", error);
     }
+    this.$nextTick(() => {
+      window.scrollTo(0, 0);
+    });
+
   },
 
   methods: {
@@ -83,7 +113,6 @@ export default {
 
         const chart = this.charts.find((chart) => chart.name === nonReactiveData.modelName);
         if (chart && nonReactiveData.epoch.length > 0) {
-          // console.log("Train message:", nonReactiveData);
           chart.hasLossChart = true;
           chart.chartData = {
             labels: nonReactiveData.epoch,
@@ -103,18 +132,17 @@ export default {
           chart.chartData = {
             metrics: nonReactiveData.metrics
           };
-
         }
-        console.log(this.charts)
-        // console.log("Eval message:", nonReactiveData.metrics);
-        // console.log("Chart data:", this.charts)
+        this.updateMetricsSum(nonReactiveData.modelName, nonReactiveData.metrics);
       });
     },
+
     async sendTrainRequest() {
       if (this.filePath && this.model) {
         const requestData = {
           model: JSON.parse(JSON.stringify(this.model)),
-          filePath: this.filePath
+          filePath: this.filePath,
+          label: this.label
         };
         try {
           console.log("Sending train request:", requestData);
@@ -132,6 +160,12 @@ export default {
         alert("模型参数未正确传递！");
       }
     },
+    updateMetricsSum(modelName, metrics) {
+      this.metricsSum.push({
+        [modelName]: metrics
+        }
+      )
+    }
   },
 };
 </script>

@@ -2,11 +2,14 @@ package com.ziqi.mlplatform.Service;
 
 import com.ziqi.mlplatform.Model.Model;
 import com.ziqi.mlplatform.dto.ModelResponse;
+import com.ziqi.mlplatform.dto.SaveModelRequest;
 
 import java.util.List;
 
 public interface IModelService {
-    Model createModel(Model model);
+    Model createModelWithFile(Model model);
+
+    Model createModel(SaveModelRequest model);
 
     void deleteModel(Long id);
 

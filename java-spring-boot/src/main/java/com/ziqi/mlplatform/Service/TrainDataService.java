@@ -90,4 +90,10 @@ public class TrainDataService implements ITrainDataService {
                 })
                 .orElseThrow(() -> new OperationException("Model not found with id: " + id));
     }
+
+    @Override
+    public TrainData getTemplateByName(String templateName) {
+        return repository.findByTemplateName(templateName)
+                .orElseThrow(() -> new OperationException("Model not found with model name: " + templateName));
+    }
 }

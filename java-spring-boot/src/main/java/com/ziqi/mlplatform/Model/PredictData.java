@@ -11,16 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Model {
+public class PredictData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(unique = true)
-    private String modelName;
-    private String modelClass;
-    private String modelPath;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "upload_file_id", nullable = true)
-//    @JsonBackReference
-    private TrainData uploadFile;
+    private String fileName;
+    private String filePath;
 }

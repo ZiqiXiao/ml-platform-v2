@@ -6,14 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class ModelResponse {
-    private Long id;
-    private String modelName;
-    private String modelPath;
-    private String modelClass;
+@AllArgsConstructor
+@Builder
+public class SaveModelRequest {
+    private List<String> modelName;
+    private List<String> modelClass;
     private TrainData uploadFile;
+
 }

@@ -1,37 +1,37 @@
 <template>
   <div>
-    <h2>训练准备</h2>
+    <h2>预测准备</h2>
     <div class="py-4 container-fluid">
       <div class="row">
         <div class="col-12">
-          <train-dataset-choose @putFilePath="getFilePath" @putLabel="getLabel"/>
-          <train-model @putModel="getModel" />
+          <predict-dataset-choose @putFilePath="getFilePath"/>
+          <model-choose @putModelPath="getModelPath" />
         </div>
         <button type="button" class="btn-primary" @click="submitForm">提交</button>
       </div>
     </div>
   </div>
-
 </template>
 
 <script>
-import TrainModel from "@/views/components/TrainModel.vue";
-import TrainDatasetChoose from "@/views/components/TrainDatasetChoose.vue";
+import PredictDatasetChoose from "@/views/components/PredictDatasetChoose.vue";
+import ModelChoose from "@/views/components/ModelChoose.vue";
 import router from "@/router";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
-  name: "Train",
+  name: "Predict",
+
   components: {
-    TrainModel,
-    TrainDatasetChoose
+    PredictDatasetChoose,
+    ModelChoose,
   },
+
   data() {
     return {
       filePath: null,
-      model: null,
-      label: null,
-    }
+      modelPath: null,
+    };
   },
 
   watch: {
@@ -39,37 +39,28 @@ export default {
       console.log("New filePath value:", newValue);
     },
 
-    model(newValue) {
-      console.log("New model value:", newValue);
+    modelPath(newValue) {
+      console.log("New modelPath value:", newValue);
     },
-
-    label(newValue) {
-      console.log("New label value:", newValue);
-    }
   },
+
   methods: {
     getFilePath(value) {
       this.filePath = value;
     },
 
-    getModel(value) {
-      this.model = value;
-    },
-
-    getLabel(value) {
-      this.label = value;
+    getModelPath(value) {
+      this.modelPath = value;
     },
 
     async submitForm() {
-      if (this.filePath && this.model) {
+      if (this.filePath && this.modelPath) {
         try {
-          console.log('label: ' + this.label)
           await router.push({
-            name: 'Train Result',
+            name: 'Predict Result',
             params: {
-              model: JSON.stringify(this.model),
               filePath: this.filePath,
-              label: this.label
+              modelPath: this.modelPath
             },
             // query: { isFromTrain: true}
           });
@@ -79,12 +70,14 @@ export default {
       } else if (this.filePath === null) {
         alert("请选择或上传数据！");
       } else if (this.model === null) {
-        alert("请选择模型并点击确认参数！");
+        alert("请选择模型并点击确认！");
       }
-
     }
-  }
-}
+  },
+
+};
 </script>
 
-<style scoped></style>
+<style scoped>
+
+</style>

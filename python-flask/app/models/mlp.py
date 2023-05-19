@@ -1,4 +1,6 @@
 import copy
+import random
+
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -86,6 +88,7 @@ class Model:
         self.app.logger.info('dataset split')
         train_dataset = MyDataset(train_X, train_y)
         valid_dataset = MyDataset(valid_X, valid_y)
+
         def seed_worker(worker_id):
             worker_seed = torch.initial_seed() % 2 ** 32
             np.random.seed(worker_seed)
@@ -136,20 +139,20 @@ class Model:
             metrics = cal_metrics(y_true, y_pred, type=type)
             return metrics, float(eval_loss)
 
-        self.app.logger.info('training started')
+        self.app.logger.info('training started mlp ...')
         # 训练模型
         best_acc = 0.0
         best_train_metrics = {}
         best_valid_metrics = {}
         torch.manual_seed(42)
 
-        self.app.logger.info(self.model.fc3.weight)
+        # self.app.logger.info(self.model.fc3.weight)
 
         for layer in self.model.children():
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
-        self.app.logger.info(self.model.fc3.weight)
+        # self.app.logger.info(self.model.fc3.weight)
 
         for epoch in range(num_epochs):
             self.model.train()
@@ -183,8 +186,6 @@ class Model:
             # print(f'Epoch [{epoch}/{num_epochs}]')
 
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
-        self.app.logger.info(self.metric_data)
-        self.app.logger.info(self.model.fc3.weight)
         self.socketio.emit('eval-message', self.metric_data)
         # 返回best_iter模型
         return best_model

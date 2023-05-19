@@ -1,8 +1,5 @@
 <template>
   <div class="card mb-4">
-    <div class="card-header pb-0">
-      <h6>模型列表</h6>
-    </div>
     <div class="card-body px-0 pt-0 pb-2">
       <div class="table-responsive p-0">
         <table class="table align-items-center mb-0">
@@ -44,14 +41,14 @@
                 <button class="btn btn-sm btn-danger" @click="deleteModel(item.id)">删除</button>
               </td>
               <td class="align-middle text-center">
-                <span class="text-secondary text-xs font-weight-bold">{{ item.uploadFile.templateName }}</span>
+                <span class="text-secondary text-xs font-weight-bold">{{ item.uploadFile ? item.uploadFile.templateName : '' }}</span>
               </td>
               <td class="align-middle text-center text-sm">
                 <button @click="renameField(item.id, tableData, 'templateName','update-template-name')" class="btn btn-sm btn-secondary">重命名</button>
                 <button class="btn btn-sm btn-success" @click="downloadTemplate(item.id)">下载</button>
               </td>
               <td class="align-middle text-center">
-                <span v-if="item.uploadFile" class="text-secondary text-xs font-weight-bold">{{ item.uploadFile.fileName }}</span>
+                <span v-if="item.uploadFile" class="text-secondary text-xs font-weight-bold">{{ item.uploadFile ? item.uploadFile.fileName : '' }}</span>
                 <span v-else class="text-secondary text-xs font-weight-bold">-</span>
               </td>
             </tr>
@@ -64,6 +61,7 @@
 
 <script>
 import axios from 'axios';
+import serviceRoute from "@/utils/service-route";
 
 export default {
   name: "ModelTable",
@@ -79,8 +77,9 @@ export default {
   methods: {
     async fetchTableData() {
       try {
-        const response = await axios.get('http://127.0.0.1:8080/model/get-all');
+        const response = await axios.get(serviceRoute['java-springboot']['model'] + '/get-all');
         this.tableData = response.data;
+        console.log('Data fetched:', this.tableData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }

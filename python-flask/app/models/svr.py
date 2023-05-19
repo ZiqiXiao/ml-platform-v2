@@ -49,7 +49,7 @@ class Model:
         self.app.logger.info('dataset split')
 
         # 训练模型
-        self.app.logger.info('training model ... ')
+        self.app.logger.info('training model svr ... ')
         self.model = SVR(**self.default_params)
         self.model.fit(train_X, train_y)
 
@@ -64,7 +64,6 @@ class Model:
                             })
 
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
-        self.app.logger.info(self.metric_data)
         self.socketio.emit('eval-message', self.metric_data)
 
         self.app.logger.info('training successfully')
