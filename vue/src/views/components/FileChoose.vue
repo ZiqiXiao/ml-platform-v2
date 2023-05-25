@@ -26,7 +26,6 @@
     </div>
     <div v-if="currentTab === 'upload'">
       <input type="file" @change="onFileChange" />
-      <button v-if="scenario === 'predict-data'" class="btn btn-primary" @click="saveDataToServer">保存至服务器</button>
     </div>
     <div v-if="currentTab === 'fill'">
       <input v-model="search" type="text" class="form-control mb-3" placeholder="搜索数据集" />
@@ -58,6 +57,14 @@
     </div>
     <div class="card-footer">
       <button class="btn btn-primary" @click="confirm">确认</button>
+      <button
+        v-if="scenario === 'predict-data' && currentTab === 'upload'"
+        class="btn btn-primary"
+        style="margin-left: 20px"
+        @click="saveDataToServer"
+      >
+        保存至服务器
+      </button>
     </div>
   </div>
 
@@ -161,7 +168,7 @@ export default {
     },
 
     async getTemplateColumns() {
-      try{
+      try {
         const selectedTemplate = this.templates.find((temp) => temp.templateName === this.selectedTemplate);
         selectedTemplate && await axios.post(serviceRoute["python-flask"] + "/predict-template-headers", {
           templatePath: selectedTemplate.templatePath,
@@ -175,11 +182,38 @@ export default {
 
     async saveDataToServer() {
       try {
-        await axios.post(serviceRoute["java-springboot"]['predict-data'] + "/create", {
-          fileName: this.uploadedFile.name,
-          filePath: this.uploadedTmpPath,
-        });
-        alert("保存成功！");
+        let fileNameWithoutExtension = this.uploadedFile.name.split('.')[0];
+        if (!this.uploadedFile) {
+          alert("请先上传文件！");
+        } else if (this.uploadedFile && !await this.checkFileExist(fileNameWithoutExtension)) {
+          let shouldOverwrite = confirm("该文件已存在，是否覆盖？");
+
+          if (shouldOverwrite) {
+            await axios.post(serviceRoute["python-flask"] + "/overwrite-predict-data", {
+              fileName: fileNameWithoutExtension, // 上传的文件名
+              filePath: this.uploadedTmpPath,
+            }).then(res => {
+              console.log(res)
+              if (res.status === 200) {
+                alert("保存成功！");
+              } else {
+                alert("保存失败！");
+              }
+            })
+          }
+        } else if (this.uploadedFile && await this.checkFileExist(fileNameWithoutExtension)) {
+          await axios.post(serviceRoute["java-springboot"]['predict-data'] + "/create", {
+            fileName: fileNameWithoutExtension, // 上传的文件名
+            filePath: this.uploadedTmpPath,
+          }).then(res => {
+            if (res.status === 201) {
+              this.filePath = res.data.filePath
+              alert("保存成功！");
+            } else {
+              alert("保存失败！");
+            }
+          })
+        }
       } catch (error) {
         console.error("Error saving data to server:", error);
       }
@@ -195,10 +229,10 @@ export default {
 
     async fetchUploadTmpPath() {
       try {
-        if (this.scenario === "train-data"){
+        if (this.scenario === "train-data") {
           const response = await axios.get(serviceRoute["python-flask"] + "/train-data-upload-path");
           this.uploadedTmpPath = response.data;
-        } else if (this.scenario === "predict-data"){
+        } else if (this.scenario === "predict-data") {
           const response = await axios.get(serviceRoute["python-flask"] + "/predict-data-upload-path");
           this.uploadedTmpPath = response.data;
         }
@@ -264,7 +298,7 @@ export default {
       await axios.post(serviceRoute["python-flask"] + '/upload-fill-data', {
         fillData: fillData
       }).then((res) => {
-        if (res.data.status === 200) {
+        if (res.status === 200) {
           this.filePath = res.data.filePath
           alert("填充成功！");
         } else {
@@ -285,17 +319,16 @@ export default {
       formData.append("path", this.uploadedTmpPath)
       formData.append("overwrite", false)
       console.log(formData)
-      axios
-        .post(serviceRoute["python-flask"] + "/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
+      axios.post(serviceRoute["python-flask"] + "/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
         .then((response) => {
-          if (response.data.status === 200) {
+          if (response.status === 200) {
             alert("上传成功");
             this.filePath = this.uploadedTmpPath + "/" + this.uploadedFile.name;
-          } else if (response.data.status === 409) {
+          } else if (response.status === 409) {
             this.filePath = this.uploadedTmpPath + "/" + this.uploadedFile.name;
             if (window.confirm(`${response.data.message}文件已存在，是否覆盖？`)) {
               formData.set('overwrite', true)
@@ -307,7 +340,7 @@ export default {
                   },
                 })
                 .then((response) => {
-                  if (response.data.status === 200) {
+                  if (response.status === 200) {
                     alert("上传成功");
                     this.filePath = this.uploadedTmpPath + "/" + this.uploadedFile.name;
                   } else {
@@ -320,9 +353,32 @@ export default {
         .catch((error) => {
           console.error("Error uploading training data:", error);
         });
-    }
-  },
-};
+    },
+
+    async checkFileExist(name) {
+      console.log(name)
+      try {
+        let res = await axios.get(serviceRoute["java-springboot"]["predict-data"] + `/check/${name}`);
+        console.log(res);
+        if (res.status === 200) {
+          this.filePath = res.data.filePath;
+          return false;
+        } else {
+          console.log('Unexpected status code: ' + res.status);
+          return true;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 404) {
+          console.log('File not exist');
+          return true;
+        } else {
+          console.log(err);
+          return false;
+        }
+      }
+    },
+  }
+}
 </script>
 
 <style scoped>

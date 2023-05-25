@@ -91,6 +91,8 @@ export default {
       bgImg
     }
   },
+  mounted() {
+  },
   beforeMount() {
     this.$store.state.hideConfigButton = true;
     this.$store.state.showNavbar = false;

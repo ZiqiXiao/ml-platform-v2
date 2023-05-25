@@ -35,16 +35,16 @@ public class TrainDataController {
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<TrainData> getUploadFileById(@PathVariable Long id) {
-        TrainData uploadFile = trainDataService.getTrainDataById(id);
-        return ResponseEntity.ok(uploadFile);
+    @ResponseStatus(HttpStatus.OK)
+    public List<TrainDataResponse> getUploadFileById(@PathVariable Long id) {
+        return trainDataService.getTrainDataById(id);
     }
 
     @GetMapping("/get-by-name/{fileName}")
     public ResponseEntity<?> getUploadFileByName(@PathVariable String fileName) {
         try{
-            TrainData uploadFile = trainDataService.getUploadFileByName(fileName);
-            return ResponseEntity.ok(uploadFile);
+            TrainData trainData = trainDataService.getUploadFileByName(fileName);
+            return ResponseEntity.ok(trainData);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Model not found with model name: " + fileName);
         }
@@ -53,17 +53,17 @@ public class TrainDataController {
     @GetMapping("/get-template-by-name/{templateName}")
     public ResponseEntity<?> getTemplateByName(@PathVariable String templateName) {
         try{
-            TrainData uploadFile = trainDataService.getTemplateByName(templateName);
-            return ResponseEntity.ok(uploadFile);
+            TrainData trainData = trainDataService.getTemplateByName(templateName);
+            return ResponseEntity.ok(trainData);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Model not found with model name: " + templateName);
         }
     }
 
-    @PostMapping("/update-model-name")
+    @PostMapping("/update-file-name")
     public ResponseEntity<TrainData> updateModelName(@RequestBody UpdateNameRequest request) {
-        TrainData uploadFile = trainDataService.updateFileName(Long.valueOf(request.getId()), request.getNewName());
-        return ResponseEntity.ok(uploadFile);
+        TrainData trainData = trainDataService.updateFileName(Long.valueOf(request.getId()), request.getNewName());
+        return ResponseEntity.ok(trainData);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -74,8 +74,8 @@ public class TrainDataController {
 
     @PostMapping("/update-template-name")
     public ResponseEntity<TrainData> updateTemplateName(@RequestBody UpdateNameRequest request) {
-        TrainData updateModel = trainDataService.updateTemplateName(Long.valueOf(request.getId()), request.getNewName());
-        return ResponseEntity.ok(updateModel);
+        TrainData trainData = trainDataService.updateTemplateName(Long.valueOf(request.getId()), request.getNewName());
+        return ResponseEntity.ok(trainData);
     }
 
 }

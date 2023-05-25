@@ -15,16 +15,41 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import store from "./store";
 import router from "./router";
-// import {BootstrapVue} from "bootstrap-vue";
-// import 'bootstrap/dist/css/bootstrap.css';
-// import 'bootstrap-vue/dist/bootstrap-vue.css';
 import "./assets/css/nucleo-icons.css";
 import "./assets/css/nucleo-svg.css";
 import SoftUIDashboard from "./soft-ui-dashboard";
 
-createApp(App)
-  .use(store)
-  .use(router)
-  // .use(BootstrapVue)
-  .use(SoftUIDashboard)
-  .mount('#app')
+import Keycloak from "keycloak-js";
+
+// 创建一个新的 Keycloak 实例
+const keycloak = new Keycloak({
+  url: 'http://127.0.0.1:8081',  // 替换为你的 Keycloak 服务器地址
+  realm: 'vue',  // 替换为你的 realm
+  clientId: 'vuejs',  // 替换为你的 client ID
+  redirectUri: 'http://127.0.0.1:3000/models',  // 替换为你的应用的 URL
+  locale: 'zh',
+});
+// 初始化 Keycloak
+keycloak.init({onLoad: 'login-required'}).then(authenticated => {
+  if (authenticated) {
+    const app = createApp(App)
+    app.use(store)
+    app.use(router)
+    app.use(SoftUIDashboard)
+    app.mount('#app')
+    app.config.globalProperties.$keycloak = keycloak
+    console.log(keycloak.tokenParsed)
+    const userRoles = keycloak.tokenParsed.realm_access.roles;
+    const username = keycloak.tokenParsed.preferred_username;
+    store.commit('setUserRoles', userRoles);
+    store.commit('setUsername', username);
+  } else {
+    // 如果用户未登录，那么重定向到登录页面
+    window.location.reload();
+  }
+}).catch((error) => {
+  // 如果在初始化 Keycloak 时发生错误，那么在这里处理它
+  console.error('Keycloak initialization failed',error)
+});
+
+export default keycloak;

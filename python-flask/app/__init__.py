@@ -8,8 +8,6 @@ from app.views import init_routes
 from app.utils.log_utils import setup_logger
 
 
-
-
 def create_app(config_class=Config):
     app = Flask(__name__)
 

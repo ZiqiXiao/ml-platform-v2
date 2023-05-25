@@ -175,7 +175,7 @@ export default {
         const res = {
           modelClass: algoName,
           modelName: modelSaveName,
-          uploadFile: {
+          trainData: {
             fileName: uploadFileName,
             templateName: templateName,
         }

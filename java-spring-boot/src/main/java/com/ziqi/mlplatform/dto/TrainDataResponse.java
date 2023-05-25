@@ -18,5 +18,5 @@ public class TrainDataResponse {
     private String filePath;
     private String templateName;
     private String templatePath;
-    // private List<Model> models;
+    private List<Model> models;
 }

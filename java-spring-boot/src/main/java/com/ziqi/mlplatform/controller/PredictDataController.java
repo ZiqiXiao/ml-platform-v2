@@ -49,8 +49,24 @@ public class PredictDataController {
     }
 
     @PostMapping("/update-file-name")
-    public ResponseEntity<PredictData> updateFileName(@RequestBody UpdateNameRequest request) {
+    public ResponseEntity<?> updateFileName(@RequestBody UpdateNameRequest request) {
         PredictData predictData = predictDataService.updateFileName(Long.valueOf(request.getId()), request.getNewName());
-        return ResponseEntity.ok(predictData);
+        if (predictData != null) {
+            return ResponseEntity.ok(predictData);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Model name update failed.");
+        }
+
+    }
+
+    @GetMapping("/check/{fileName}")
+    public ResponseEntity<PredictData> checkPredictDataExist(@PathVariable String fileName) {
+        return predictDataService.checkPredictDataExist(fileName);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deletePredictDataById(@PathVariable Long id) {
+        predictDataService.deletePredictData(id);
+        return ResponseEntity.noContent().build();
     }
 }

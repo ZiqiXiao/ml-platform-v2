@@ -8,6 +8,7 @@ import com.ziqi.mlplatform.Model.TrainData;
 import com.ziqi.mlplatform.Repository.PredictDataRepository;
 import com.ziqi.mlplatform.dto.PredictDataRequest;
 import com.ziqi.mlplatform.dto.PredictDataResponse;
+import com.ziqi.mlplatform.dto.TrainDataResponse;
 import com.ziqi.mlplatform.exception.OperationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,15 +25,6 @@ public class PredictDataService implements IPredictDataService {
     private final PredictDataRepository predictDataRepository;
     @Autowired
     private RestTemplate restTemplate;
-
-//    @Override
-//    public PredictData createPredictData(PredictData predictData) {
-//        try {
-//            return predictDataRepository.save(predictData);
-//        } catch (Exception e){
-//            throw new OperationException(e.getMessage());
-//        }
-//    }
 
     @Override
     public PredictData createPredictData(PredictDataRequest predictDataRequest) {
@@ -55,8 +46,7 @@ public class PredictDataService implements IPredictDataService {
                         .fileName(predictDataRequest.getFileName())
                         .filePath(filePath)
                         .build();
-                predictDataRepository.save(predictData);
-                return null;
+                return predictDataRepository.save(predictData);
             } else {
                 // Flask API调用失败，处理错误
                 throw new OperationException("Flask API call failed with status code: " + response.getStatusCode());
@@ -68,10 +58,26 @@ public class PredictDataService implements IPredictDataService {
 
     @Override
     public void deletePredictData(Long id) {
-        try{
-            predictDataRepository.deleteById(id);
+        try {
+            Optional<PredictData> predictData = predictDataRepository.findById(id);
+            if (predictData.isEmpty()) {
+                throw new OperationException("Predict data not found with id: " + id);
+            }
+            String fileName = predictData.get().getFileName();
+            Map<String, String> body = new HashMap<>();
+            body.put("fileName", fileName);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "http://flask:5001/delete-predict-data",
+                    body,
+                    String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                System.out.println(response);
+                predictDataRepository.deleteById(id);
+            } else {
+                throw new OperationException("Error deleting predict data with id: " + id);
+            }
         } catch (Exception e) {
-            throw new OperationException("Predict data not found with id: " + id);
+            throw new OperationException("Error deleting predict data with id: " + id);
         }
     }
 
@@ -86,6 +92,13 @@ public class PredictDataService implements IPredictDataService {
     }
 
     @Override
+    public ResponseEntity<PredictData> checkPredictDataExist(String fileName){
+        Optional<PredictData> optionalPredictData = predictDataRepository.findByFileName(fileName);
+        return optionalPredictData.map(predictData -> new ResponseEntity<>(predictData, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @Override
     public PredictData getPredictDataByName(String fileName) {
         try {
             return predictDataRepository.findByFileName(fileName)
@@ -96,17 +109,36 @@ public class PredictDataService implements IPredictDataService {
     }
 
     @Override
-    public PredictData updateFileName(Long id, String fileName) {
+    public PredictData updateFileName(Long id, String newName) {
         try {
-            return predictDataRepository.findById(id)
-                    .map(model1 -> {
-                        model1.setFileName(fileName);
-                        return predictDataRepository.save(model1);
-                    })
-                    .orElseThrow(() -> new OperationException("Predict data not found with id: " + id));
+            Optional<PredictData> predictData = predictDataRepository.findById(id);
+            if (predictData.isEmpty()) {
+                throw new OperationException("Predict data not found with id: " + id);
+            }
+            String fileName = predictData.get().getFileName();
+            Map<String, String> body = new HashMap<>();
+            body.put("fileName", fileName);
+            body.put("newName", newName);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "http://flask:5001/rename-predict-data",
+                    body,
+                    String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode jsonNode = objectMapper.readTree(response.getBody());
+                String newPath = jsonNode.get("newPath").asText();
+                return predictDataRepository.findById(id)
+                        .map(model1 -> {
+                            model1.setFileName(newName);
+                            model1.setFilePath(newPath);
+                            return predictDataRepository.save(model1);
+                        })
+                        .orElseThrow(() -> new OperationException("Predict data not found with id: " + id));
+            }
         } catch (Exception e) {
-            throw new OperationException("Predict data not found with name: " + fileName);
+            throw new OperationException("Predict data not found with id: " + id);
         }
+        return null;
     }
 
     @Override

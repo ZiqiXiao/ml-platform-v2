@@ -19,8 +19,8 @@ public class Model {
     private String modelName;
     private String modelClass;
     private String modelPath;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {}, optional = true)
     @JoinColumn(name = "upload_file_id", nullable = true)
 //    @JsonBackReference
-    private TrainData uploadFile;
+    private TrainData trainData;
 }

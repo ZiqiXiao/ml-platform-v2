@@ -1,7 +1,7 @@
 <template>
   <div class="card mb-4">
     <div class="card-body px-0 pt-0 pb-2">
-      <div class="table-responsive p-0">
+      <div class="table-responsive p-0 overflow-auto" style="height: 500px;">
         <table class="table align-items-center mb-0">
           <thead>
             <tr>
@@ -37,14 +37,14 @@
                 <p class="text-xs font-weight-bold mb-0">{{ item.modelName }}</p>
               </td>
               <td class="align-middle text-center text-sm">
-                <button class="btn btn-sm btn-secondary" @click="renameField(item.id, tableData, 'modelName','update-model-name')">重命名</button>
+                <button class="btn btn-sm btn-secondary" @click="renameField(item.id, tableData, 'modelName','model/update-model-name')">重命名</button>
                 <button class="btn btn-sm btn-danger" @click="deleteModel(item.id)">删除</button>
               </td>
               <td class="align-middle text-center">
                 <span class="text-secondary text-xs font-weight-bold">{{ item.uploadFile ? item.uploadFile.templateName : '' }}</span>
               </td>
               <td class="align-middle text-center text-sm">
-                <button @click="renameField(item.id, tableData, 'templateName','update-template-name')" class="btn btn-sm btn-secondary">重命名</button>
+                <button class="btn btn-sm btn-secondary" @click="renameField(item.id, tableData, 'templateName','train-data/update-template-name')">重命名</button>
                 <button class="btn btn-sm btn-success" @click="downloadTemplate(item.id)">下载</button>
               </td>
               <td class="align-middle text-center">
@@ -95,7 +95,7 @@ export default {
             alert("名称已存在，请重新输入！");
             return;
           }
-          const response = await axios.post(`http://127.0.0.1:8080/model/${endpoint}`, {
+          const response = await axios.post(serviceRoute['java-springboot']+`/${endpoint}`, {
             id: modelId,
             newName: newName
           });
@@ -117,7 +117,7 @@ export default {
     async deleteModel(modelId) {
       if (confirm("确定要删除此模型吗？")) {
         try {
-          const response = await axios.delete(`http://127.0.0.1:8080/model/delete/${modelId}`);
+          const response = await axios.delete(serviceRoute['java-springboot']['model']+`/delete/${modelId}`);
           if (response.status === 204) {
             // 返回成功消息
             alert("删除成功！");

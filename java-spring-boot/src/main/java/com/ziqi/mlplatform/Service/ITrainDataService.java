@@ -15,7 +15,7 @@ public interface ITrainDataService {
 
     TrainData updateFileName(Long id, String fileName);
 
-    TrainData getTrainDataById(Long id);
+    List<TrainDataResponse> getTrainDataById(Long id);
 
     TrainData getUploadFileByName(String fileName);
 

@@ -32,6 +32,13 @@
           </template>
         </sidenav-collapse>
       </li>
+      <li class="nav-item">
+        <sidenav-collapse :nav-text="pageName['Dataset']" :to="{ name: 'Dataset' }">
+          <template #icon>
+            <icon name="tables" />
+          </template>
+        </sidenav-collapse>
+      </li>
       <!-- <li class="nav-item">
         <sidenav-collapse :nav-text="pageName['Train Result']" :to="{ name: 'Train Result', params: {model : {}, filePath: ''}}">
           <template #icon>

@@ -15,6 +15,6 @@ import java.util.List;
 public class SaveModelRequest {
     private List<String> modelName;
     private List<String> modelClass;
-    private TrainData uploadFile;
+    private TrainData trainData;
 
 }

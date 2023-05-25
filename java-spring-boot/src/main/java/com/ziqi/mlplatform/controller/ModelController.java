@@ -60,7 +60,7 @@ public class ModelController {
     }
 
     @PostMapping("/update-model-name")
-    public ResponseEntity<Model> updateModelName(@RequestBody UpdateNameRequest request) {
+    public ResponseEntity<?> updateModelName(@RequestBody UpdateNameRequest request) {
         Model updateModel = modelService.updateModelName(Long.valueOf(request.getId()), request.getNewName());
         return ResponseEntity.ok(updateModel);
     }

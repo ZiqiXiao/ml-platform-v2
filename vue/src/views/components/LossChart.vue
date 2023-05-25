@@ -8,9 +8,9 @@
 <script>
 import { Line } from 'vue-chartjs';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
+import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Colors } from 'chart.js';
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, zoomPlugin)
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, zoomPlugin, PointElement, LineElement, Colors)
 export default {
   components: {
     Line

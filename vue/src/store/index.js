@@ -15,6 +15,8 @@ export default createStore({
     showNavbar: true,
     showFooter: true,
     showMain: true,
+    userRoles: [],
+    username: ''
   },
   mutations: {
     toggleConfigurator(state) {
@@ -47,6 +49,12 @@ export default createStore({
       } else {
         state.isNavFixed = false;
       }
+    },
+    setUserRoles(state, roles) {
+      state.userRoles = roles;
+    },
+    setUsername(state, username) {
+      state.username = username;
     },
   },
   actions: {

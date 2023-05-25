@@ -3,11 +3,14 @@ package com.ziqi.mlplatform.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ziqi.mlplatform.Model.Model;
+import com.ziqi.mlplatform.Model.PredictData;
 import com.ziqi.mlplatform.Model.TrainData;
 import com.ziqi.mlplatform.Repository.ModelRepository;
 import com.ziqi.mlplatform.dto.ModelResponse;
 import com.ziqi.mlplatform.dto.SaveModelRequest;
 import com.ziqi.mlplatform.exception.OperationException;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,26 +20,26 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
-import org.json.JSONObject;
-
 @Service
 @RequiredArgsConstructor
 public class ModelService implements IModelService {
-    private final ModelRepository repository;
-    private final ITrainDataService uploadFileService;
+    private final ModelRepository modelRepository;
+    private final ITrainDataService trainDataService;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private EntityManager entityManager;
 
     public Model createModelWithFile(Model model) {
         try {
-            Optional<TrainData> existingUploadFile = uploadFileService.findByFileName(model.getUploadFile().getFileName());
+            Optional<TrainData> existingUploadFile = trainDataService.findByFileName(model.getTrainData().getFileName());
             if (existingUploadFile.isEmpty()) {
-                TrainData uploadFile = uploadFileService.createTrainData(model.getUploadFile());
-                model.setUploadFile(uploadFile);
+                TrainData uploadFile = trainDataService.createTrainData(model.getTrainData());
+                model.setTrainData(uploadFile);
             }
 
-            existingUploadFile.ifPresent(model::setUploadFile);
-            return repository.save(model);
+            existingUploadFile.ifPresent(model::setTrainData);
+            return modelRepository.save(model);
         } catch (Exception e) {
             throw new OperationException(e.getMessage());
         }
@@ -60,18 +63,18 @@ public class ModelService implements IModelService {
                 String filePath = jsonNode.get("filePath").asText();
                 String templatePath = jsonNode.get("templatePath").asText();
                 System.out.println(filePath.length());
-                if (saveModelRequest.getUploadFile().getFileName().length() == 0) {
-                    saveModelRequest.getUploadFile().setFileName(null);
-                    saveModelRequest.getUploadFile().setFilePath(null);
+                if (saveModelRequest.getTrainData().getFileName().length() == 0) {
+                    saveModelRequest.getTrainData().setFileName(null);
+                    saveModelRequest.getTrainData().setFilePath(null);
                 } else {
-                    saveModelRequest.getUploadFile().setFilePath(filePath);
+                    saveModelRequest.getTrainData().setFilePath(filePath);
                 }
 
-                if (saveModelRequest.getUploadFile().getTemplateName().length() == 0) {
-                    saveModelRequest.getUploadFile().setTemplatePath(null);
-                    saveModelRequest.getUploadFile().setTemplateName(null);
+                if (saveModelRequest.getTrainData().getTemplateName().length() == 0) {
+                    saveModelRequest.getTrainData().setTemplatePath(null);
+                    saveModelRequest.getTrainData().setTemplateName(null);
                 } else {
-                    saveModelRequest.getUploadFile().setTemplatePath(templatePath);
+                    saveModelRequest.getTrainData().setTemplatePath(templatePath);
                 }
 
                 JsonNode modelPathsNode = jsonNode.get("modelPaths");
@@ -80,9 +83,9 @@ public class ModelService implements IModelService {
                     modelPaths.add(pathNode.asText());
                 }
 
-                if (saveModelRequest.getUploadFile().getFileName() != null | saveModelRequest.getUploadFile().getTemplateName() != null) {
-                    TrainData uploadFile = uploadFileService.createTrainData(saveModelRequest.getUploadFile());
-                    System.out.println(uploadFile);
+                if (saveModelRequest.getTrainData().getFileName() != null | saveModelRequest.getTrainData().getTemplateName() != null) {
+                    TrainData trainData = trainDataService.createTrainData(saveModelRequest.getTrainData());
+                    System.out.println(trainData);
 
                     for (int i=0; i<saveModelRequest.getModelName().size(); i++) {
 
@@ -90,10 +93,10 @@ public class ModelService implements IModelService {
                                 .modelName(saveModelRequest.getModelName().get(i))
                                 .modelClass(saveModelRequest.getModelClass().get(i))
                                 .modelPath(modelPaths.get(i))
-                                .uploadFile(uploadFile)
+                                .trainData(trainData)
                                 .build();
                         System.out.println(model);
-                        repository.save(model);
+                        modelRepository.save(model);
                     }
                 } else {
                     for (int i=0; i<saveModelRequest.getModelName().size(); i++) {
@@ -104,7 +107,7 @@ public class ModelService implements IModelService {
                                 .modelPath(modelPaths.get(i))
                                 .build();
                         System.out.println(model);
-                        repository.save(model);
+                        modelRepository.save(model);
                     }
                 }
                 return null;
@@ -119,7 +122,7 @@ public class ModelService implements IModelService {
 
     public List<ModelResponse> getAllData(){
         try {
-            List<Model> models = repository.findAll();
+            List<Model> models = modelRepository.findAll();
             return models.stream().map(this::mapToModelResponse).toList();
         } catch (Exception e) {
             throw new OperationException("No model found");
@@ -133,34 +136,79 @@ public class ModelService implements IModelService {
                 .modelName(model.getModelName())
                 .modelClass(model.getModelClass())
                 .modelPath(model.getModelPath())
-                .uploadFile(model.getUploadFile())
+                .uploadFile(model.getTrainData())
                 .build();
     }
 
+    @Override
+    @Transactional
     public void deleteModel(Long id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-        } else {
-            throw new OperationException("Model not found with id: " + id);
+        try {
+            Optional<Model> model = modelRepository.findById(id);
+            if (model.isEmpty()) {
+                throw new OperationException("Predict data not found with id: " + id);
+            }
+            String modelName = model.get().getModelName();
+            String modelClass = model.get().getModelClass();
+            Map<String, String> body = new HashMap<>();
+            body.put("modelClass", modelClass);
+            body.put("modelName", modelName);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "http://flask:5001/delete-model",
+                    body,
+                    String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                modelRepository.deleteModelById(id);
+            } else {
+                throw new OperationException("Error deleting model with id: " + id);
+            }
+        } catch (Exception e) {
+            throw new OperationException("Error deleting model with id: " + id + e);
         }
     }
 
-    public Model updateModelName(Long id, String modelName) {
-        return repository.findById(id)
-                .map(model1 -> {
-                    model1.setModelName(modelName);
-                    return repository.save(model1);
-                })
-                .orElseThrow(() -> new OperationException("Model not found with id: " + id));
+    @Override
+    public Model updateModelName(Long id, String newName) {
+        try {
+            Optional<Model> model = modelRepository.findById(id);
+            if (model.isEmpty()) {
+                throw new OperationException("Model not found with id: " + id);
+            }
+            String modelName = model.get().getModelName();
+            String modelClass = model.get().getModelClass();
+            Map<String, String> body = new HashMap<>();
+            body.put("modelName", modelName);
+            body.put("newName", newName);
+            body.put("modelClass", modelClass);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "http://flask:5001/rename-model",
+                    body,
+                    String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode jsonNode = objectMapper.readTree(response.getBody());
+                String newPath = jsonNode.get("newPath").asText();
+                return modelRepository.findById(id)
+                        .map(model1 -> {
+                            model1.setModelName(newName);
+                            model1.setModelPath(newPath);
+                            return modelRepository.save(model1);
+                        })
+                        .orElseThrow(() -> new OperationException("Model not found with id: " + id));
+            }
+        } catch (Exception e) {
+            throw new OperationException("Model not found with id: " + id + e);
+        }
+        return null;
     }
 
     public Model getModelById(Long id) {
-        return repository.findById(id)
+        return modelRepository.findById(id)
                 .orElseThrow(() -> new OperationException("Model not found with id: " + id));
     }
 
     public Model getModelByName(String modelName) {
-        return repository.findByModelName(modelName)
+        return modelRepository.findByModelName(modelName)
                 .orElseThrow(() -> new OperationException("Model not found with model name: " + modelName));
     }
 

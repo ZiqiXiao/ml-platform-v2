@@ -19,5 +19,8 @@ export default {
   components: {
     ModelTable
   },
+  mounted() {
+
+  }
 };
 </script>

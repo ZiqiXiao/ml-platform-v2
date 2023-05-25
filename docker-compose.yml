@@ -14,6 +14,8 @@ services:
       - TZ=Asia/Shanghai
     depends_on:
       - mysql
+    networks:
+      - keycloak-network
 
   mysql:
     image: mysql:8.0
@@ -28,6 +30,8 @@ services:
     ports:
       - "3306:3306"
     command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - keycloak-network
 
   flask:
     build: ./python-flask
@@ -42,6 +46,9 @@ services:
     volumes:
       - ./python-flask:/app
       - ./data:/app/data
+    networks:
+      - keycloak-network
+
 
   vue:
     build: ./vue
@@ -53,6 +60,32 @@ services:
       - JAVA_SERVICE_URL=http://spring-boot:8080
       - FLASK_SERVICE_URL=http://flask:5001
       - TZ=Asia/Shanghai
+    command: npm install
     volumes:
       - ./vue:/app
       - /app/node_modules
+    networks:
+      - keycloak-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    environment:
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://mysql:3306/test
+      KC_DB_USERNAME: test
+      KC_DB_PASSWORD: test
+      KC_DB_DATABASE: test
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_LOG_LEVEL: DEBUG
+      TZ: Asia/Shanghai
+    ports:
+      - "8081:8080"
+    command: start-dev
+    depends_on:
+      - mysql
+    networks:
+      - keycloak-network
+
+networks:
+    keycloak-network:
