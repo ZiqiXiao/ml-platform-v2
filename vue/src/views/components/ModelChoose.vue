@@ -8,7 +8,7 @@
           v-for="model in sortedFilteredModels"
           :key="model.id"
           :value="model.modelName">
-          {{ modelName[model.modelClass] + ':' + model.modelName }}
+          {{ modelName[model.mission][model.modelClass] + ':' + model.modelName }}
         </option>
       </select>
       <div class="card-footer text-center">
@@ -44,8 +44,8 @@ export default {
   computed: {
     sortedFilteredModels() {
       return this.filteredModels.slice().sort((a, b) => {
-        const aValue = this.modelName[a.modelClass] + ':' + a.modelName;
-        const bValue = this.modelName[b.modelClass] + ':' + b.modelName;
+        const aValue = this.modelName[a.mission][a.modelClass] + ':' + a.modelName;
+        const bValue = this.modelName[b.mission][b.modelClass] + ':' + b.modelName;
         return aValue.localeCompare(bValue);
       });
     },
@@ -74,7 +74,14 @@ export default {
     async fetchModels() {
       try {
         const response = await axios.get(serviceRoute["java-springboot"]['model'] + "/get-all");
-        this.models = response.data;
+        this.models = response.data.map(model => {
+          let pathParts = model.modelPath.split("/");
+          let mission = pathParts[pathParts.length - 3];
+          return {
+            ...model,
+            mission: mission
+          };
+        });
       } catch (error) {
         console.error("Error fetching model data:", error);
       }

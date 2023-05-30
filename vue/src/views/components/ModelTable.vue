@@ -18,10 +18,6 @@
               <th
                   class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"
               >操作</th>
-              <th
-                class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"
-              >训练数据集</th>
-              <th class="text-secondary opacity-7"></th>
             </tr>
           </thead>
           <tbody>
@@ -45,11 +41,7 @@
               </td>
               <td class="align-middle text-center text-sm">
                 <button class="btn btn-sm btn-secondary" @click="renameField(item.id, tableData, 'templateName','train-data/update-template-name')">重命名</button>
-                <button class="btn btn-sm btn-success" @click="downloadTemplate(item.id)">下载</button>
-              </td>
-              <td class="align-middle text-center">
-                <span v-if="item.uploadFile" class="text-secondary text-xs font-weight-bold">{{ item.uploadFile ? item.uploadFile.fileName : '' }}</span>
-                <span v-else class="text-secondary text-xs font-weight-bold">-</span>
+                <button class="btn btn-sm btn-success" @click="downloadTemplate(item.uploadFile.templatePath, item.uploadFile.templateName)">下载</button>
               </td>
             </tr>
           </tbody>
@@ -72,6 +64,10 @@ export default {
     return {
       tableData: []
     };
+  },
+
+  mounted() {
+    this.fetchTableData();
   },
 
   methods: {
@@ -132,13 +128,24 @@ export default {
       }
     },
 
-    async downloadTemplate(modelId) {
-    //   TODO: 下载模板
+    async downloadTemplate(templatePath, templateName) {
+      await axios.post(serviceRoute['python-flask'] + '/download-template', {
+        templatePath: templatePath}, {
+        responseType: 'blob'
+      }).then(res => {
+        if (res.status === 200) { 
+          const url = window.URL.createObjectURL(new Blob([res.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', templateName+'.csv'); // 设置你期望的文件名
+          document.body.appendChild(link);
+          link.click();
+          console.log('download template success')
+        } else {
+          alert('下载失败')
+        }
+      })
     }
-  },
-
-  mounted() {
-    this.fetchTableData();
   },
 };
 </script>

@@ -19,7 +19,8 @@ def init_predict_routes(app, socketio):
     def make_prediction():
         model_path = request.get_json()['modelPath']
         file_path = request.get_json()['filePath']
-        result, result_path = model_utils.predict(app, file_path, model_path, socketio)
+        result, result_path = model_utils.predict(
+            app, file_path, model_path, socketio)
         return jsonify(predictResult=result, predictResultPath=result_path), http.HTTPStatus.OK
 
     @app.route('/download-predict-result', methods=['POST'])
@@ -43,7 +44,8 @@ def init_predict_routes(app, socketio):
     @app.route('/delete-predict-data', methods=['POST'])
     def delete_predict_data():
         file_name = request.get_json()['fileName']
-        file_path = os.path.join(Config.UPLOAD_PREDICT_FOLDER, file_name + '.csv')
+        file_path = os.path.join(
+            Config.UPLOAD_PREDICT_FOLDER, file_name + '.csv')
         if os.path.exists(file_path):
             os.remove(file_path)
             return jsonify(message={'message': 'File removed successfully'}), http.HTTPStatus.OK
@@ -54,8 +56,10 @@ def init_predict_routes(app, socketio):
     def rename_predict_data():
         file_name = request.get_json()['fileName']
         new_file_name = request.get_json()['newName']
-        file_path = os.path.join(Config.UPLOAD_PREDICT_FOLDER, file_name + '.csv')
-        new_file_path = os.path.join(Config.UPLOAD_PREDICT_FOLDER, new_file_name + '.csv')
+        file_path = os.path.join(
+            Config.UPLOAD_PREDICT_FOLDER, file_name + '.csv')
+        new_file_path = os.path.join(
+            Config.UPLOAD_PREDICT_FOLDER, new_file_name + '.csv')
         if os.path.exists(file_path):
             os.rename(file_path, new_file_path)
             return jsonify(message={'message': 'File renamed successfully'}, newPath=new_file_path), http.HTTPStatus.OK

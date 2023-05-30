@@ -2,21 +2,24 @@
   <div>
     <div v-for="(chart, index) in charts" :key="index" class="card">
       <div class="card-header">
-        <h3>{{ modelName[chart.name] }}</h3>
+        <h3>{{ modelName[mission][chart.name] }}</h3>
         <h5>训练进度</h5>
         <progress :value="chart.progress" :max="100" show-progress></progress>
       </div>
       <div class="card-body">
         <LossChart v-if="chart.hasLossChart" :chart-name="chart.name" :chart-data="chart.chartData" />
-        <MetricTable v-if="chart.chartData" :table-data="chart.chartData.metrics" />
+        <result-graph v-if="chart.confusionMatrix" :graph-info="chart.confusionMatrix" :title="confusionMatrixTitle"/>
+        <result-graph v-if="chart.rocCurve" :title="rocCurveTitle" :graph-info="chart.rocCurve" />
+        <result-graph v-if="chart.featureImportance" :title="featureImportanceTitle" :graph-info="chart.featureImportance" />
+        <MetricTable v-if="chart.chartData" :table-data="chart.chartData.metrics" :mission="mission" />
       </div>
     </div>
     <div class="card">
       <div class="card-header">
         <h3>总体结果</h3>
       </div>
-      <div class="card-body">
-        <MetricTableSum v-if="metricsSum.length" :metrics-sum="metricsSum" />
+      <div class="card-body scrollable-table">
+        <metric-table-sum v-if="metricsSum.length" :metrics-sum="metricsSum" :mission="mission" />
       </div>
     </div>
     <div class="card">
@@ -24,7 +27,7 @@
         <h3>保存模型</h3>
       </div>
       <div class="card-body">
-        <ModelSave :metrics-sum="metricsSum" />
+        <model-save :metrics-sum="metricsSum" :mission="mission" />
       </div>
     </div>
   </div>
@@ -41,10 +44,12 @@ import axios from "axios";
 import MetricTable from "@/views/components/MetricTable.vue";
 import MetricTableSum from "@/views/components/MetricTableSum.vue";
 import ModelSave from "@/views/components/ModelSave.vue";
+import ResultGraph from "@/views/components/ResultGraph.vue";
 
 export default {
   name: "TrainResult",
   components: {
+    ResultGraph,
     LossChart,
     MetricTable,
     MetricTableSum,
@@ -58,8 +63,12 @@ export default {
       filePath: null,
       model: null,
       label:null,
+      mission: null,
       charts: [],
       modelName: ModelName,
+      confusionMatrixTitle: "Confusion Matrix-混淆矩阵",
+      featureImportanceTitle: "Feature Importance-特征重要性",
+      rocCurveTitle: "ROC-受试者工作特征曲线",
       metricsSum: [],
     }
   },
@@ -68,12 +77,16 @@ export default {
     this.model = JSON.parse(this.$route.params.model);
     this.filePath = this.$route.params.filePath;
     this.label = this.$route.params.label;
+    this.mission = this.$route.params.mission;
     Object.entries(this.model).forEach(([key,]) => {
       this.charts.push({
         name: key,
         progress: 0,
         hasLossChart: false,
         chartData: null,
+        confusionMatrix: null,
+        rocCurve: null,
+        featureImportance: null,
         },
       );
     });
@@ -126,23 +139,66 @@ export default {
                 label: "Valid Loss"
               }
             ],
-            metrics: nonReactiveData.metrics
+            metrics: nonReactiveData.metrics.map(metric => {
+              return {
+                dataset: metric.dataset,
+                acc: metric.acc,
+                mse: metric.mse,
+                mae: metric.mae,
+                rmse: metric.rmse,
+                r2: metric.r2,
+                auc: metric.auc,
+              }
+            })
           };
         } else if (chart) {
           chart.chartData = {
-            metrics: nonReactiveData.metrics
+            metrics: nonReactiveData.metrics.map(metric => {
+              return {
+                dataset: metric.dataset,
+                acc: metric.acc,
+                mse: metric.mse,
+                mae: metric.mae,
+                rmse: metric.rmse,
+                r2: metric.r2,
+                auc: metric.auc,
+              }
+            })
           };
         }
+        if (nonReactiveData.metrics[0].cm) {
+          chart.confusionMatrix = nonReactiveData.metrics.map(metric => {
+            return {
+              dataset: metric.dataset,
+              imgUrl: metric.cm,
+            }
+          })
+        }
+        if (nonReactiveData.metrics[0].roc) {
+          chart.rocCurve = nonReactiveData.metrics.map(metric => {
+            return {
+              dataset: metric.dataset,
+              imgUrl: metric.roc,
+            }
+          })
+        }
+        if (nonReactiveData.featureImportance) {
+          chart.featureImportance = [{
+            dataset: "",
+            imgUrl: nonReactiveData.featureImportance}]
+        }
+        console.log(this.charts);
         this.updateMetricsSum(nonReactiveData.modelName, nonReactiveData.metrics);
       });
     },
 
     async sendTrainRequest() {
-      if (this.filePath && this.model) {
+      if (this.filePath && this.model && this.mission) {
         const requestData = {
           model: JSON.parse(JSON.stringify(this.model)),
           filePath: this.filePath,
-          label: this.label
+          label: this.label,
+          mission: this.mission
         };
         try {
           console.log("Sending train request:", requestData);
@@ -173,5 +229,9 @@ export default {
 <style scoped>
 .card {
   margin-bottom: 20px;
+}
+
+.scrollable-table {
+  overflow: auto;
 }
 </style>

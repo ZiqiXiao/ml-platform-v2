@@ -1,7 +1,7 @@
-from sklearn.svm import SVR
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-from app.models.utils import cal_metrics, data_preprocess, load_dataset
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+from app.models.linear.utils import cal_metrics, data_preprocess, load_dataset
 import os
 import joblib
 import pandas as pd
@@ -11,17 +11,17 @@ from config import Config
 
 class Model:
     """
-    SVR模型
+    Linear Regression模型
     """
 
     def __init__(self, model=None, app=None, socketio=None):
         self.model = model
         self.app = app
         self.socketio = socketio
-        self.default_params = Config.DEFAULT_PARAMS['svr'].copy()
-        self.default_params.update(Config.DEFAULT_PARAMS_UNDER['svr'])
+        self.default_params = Config.DEFAULT_PARAMS['linear']['lr'].copy()
+        self.default_params.update(Config.DEFAULT_PARAMS_UNDER['linear']['lr'])
         self.metric_data = {
-            'modelName': 'svr',
+            'modelName': 'lr',
             'epoch': [],
             'trainLoss': [],
             'validLoss': [],
@@ -40,7 +40,6 @@ class Model:
         self.default_params.update(custom_params)
         train_size = self.default_params.get(
             'train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
-        # self.default_params.pop('train_size')
         print(train_size)
 
         # 对数据集进行预处理，例如划分训练集和验证集
@@ -49,8 +48,8 @@ class Model:
         self.app.logger.info('dataset split')
 
         # 训练模型
-        self.app.logger.info('training model svr ... ')
-        self.model = SVR(**self.default_params)
+        self.app.logger.info('training model lr ... ')
+        self.model = LinearRegression(**self.default_params)
         self.model.fit(train_X, train_y)
 
         train_metrics = cal_metrics(
@@ -58,14 +57,10 @@ class Model:
         valid_metrics = cal_metrics(
             valid_y, self.model.predict(valid_X), type='valid')
 
-        self.socketio.emit('train-message',
-                           {'modelName': 'svr',
-                            'progress': 100,
-                            })
-
+        self.socketio.emit(
+            'train-message', {'modelName': 'lr', 'progress': 100})
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
         self.socketio.emit('eval-message', self.metric_data)
-
         self.app.logger.info('training successfully')
         return self.model
 

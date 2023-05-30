@@ -9,18 +9,20 @@
       <th scope="col">MAE - 平均绝对误差</th>
       <th scope="col">R2</th>
       <th scope="col">RMSE - 均方根误差</th>
+      <th v-if="mission === 'binary_classification'">AUC - 曲线下面积</th>
     </tr>
     </thead>
     <tbody>
     <template v-for="(metricObj, index) in metricsSum">
       <tr v-for="(row, rowIndex) in metricObj[Object.keys(metricObj)[0]]" :key="index + '-' + rowIndex" class="align-middle text-center text-sm">
-        <td v-if="rowIndex === 0" rowspan="2">{{ modelName[Object.keys(metricObj)[0]] }}</td>
-        <td>{{ row.dataset }}</td>
+        <td v-if="rowIndex === 0" rowspan="2">{{ modelName[mission][Object.keys(metricObj)[0]] }}</td>
+        <td>{{ trainPhase[row.dataset] }}</td>
         <td>{{ row.acc.toFixed(2) }}%</td>
         <td>{{ row.mse.toFixed(4) }}</td>
         <td>{{ row.mae.toFixed(4) }}</td>
         <td>{{ row.r2.toFixed(4) }}</td>
         <td>{{ row.rmse.toFixed(4) }}</td>
+        <td v-if="mission === 'binary_classification'">{{ row.auc.toFixed(4) }}</td>
       </tr>
     </template>
     </tbody>
@@ -29,19 +31,26 @@
 
 <script>
 import ModelName from "@/utils/ModelName";
+import TrainPhase from "@/utils/TrainPhase";
 
 export default {
   name: 'MetricTableSum',
+
   props: {
     metricsSum: {
       type: Array,
       default: () => [],
     },
+    mission: {
+      type: String,
+      default: 'linear',
+    }
   },
 
   data() {
     return {
-      modelName: ModelName
+      modelName: ModelName,
+      trainPhase: TrainPhase,
     }
   },
 

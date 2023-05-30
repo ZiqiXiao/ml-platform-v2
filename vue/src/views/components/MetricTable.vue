@@ -8,22 +8,26 @@
 		<th>MAE - 平均绝对误差</th>
 		<th>R2</th>
 		<th>RMSE - 均方根误差</th>
+    <th v-if="mission === 'binary_classification'">AUC - 曲线下面积</th>
 	</tr>
 	</thead>
 	<tbody>
     <tr v-for="(row, index) in tableData" :key="index" class="align-middle text-center text-sm">
-			<td>{{ row.dataset }}</td>
+			<td>{{ trainPhase[row.dataset] }}</td>
 			<td>{{ row.acc.toFixed(2) }}%</td>
 			<td>{{ row.mse.toFixed(4) }}</td>
 			<td>{{ row.mae.toFixed(4) }}</td>
 			<td>{{ row.r2.toFixed(4) }}</td>
 			<td>{{ row.rmse.toFixed(4) }}</td>
+      <td v-if="mission === 'binary_classification'">{{ row.auc.toFixed(4) }}</td>
     </tr>
 	</tbody>
 </table>
 </template>
 
 <script>
+import TrainPhase from "@/utils/TrainPhase";
+
 export default {
 	name: 'MetricTable',
 	props: {
@@ -31,10 +35,14 @@ export default {
 			type: Array,
 			default: () => [],
 		},
+    mission: {
+      type: String,
+      default: 'linear',
+    }
 	},
 	data() {
 		return {
-
+      trainPhase: TrainPhase,
 		}
 	},
 	mounted() {

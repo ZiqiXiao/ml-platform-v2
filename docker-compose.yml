@@ -60,10 +60,10 @@ services:
       - JAVA_SERVICE_URL=http://spring-boot:8080
       - FLASK_SERVICE_URL=http://flask:5001
       - TZ=Asia/Shanghai
-    command: npm install
     volumes:
       - ./vue:/app
       - /app/node_modules
+      - ./data/tmp/:/app/data/tmp
     networks:
       - keycloak-network
 

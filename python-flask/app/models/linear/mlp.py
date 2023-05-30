@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch import optim
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from app.models.utils import cal_metrics, data_preprocess, load_dataset
+from app.models.linear.utils import cal_metrics, data_preprocess, load_dataset
 import numpy as np
 from config import Config
 
@@ -41,7 +41,8 @@ class MyDataset(Dataset):
 
     def __init__(self, data, label):
         self.data = torch.tensor(data.values, dtype=torch.float32)
-        self.label = torch.tensor(label.values, dtype=torch.float32).view(-1, 1)
+        self.label = torch.tensor(
+            label.values, dtype=torch.float32).view(-1, 1)
 
     def __len__(self):
         return len(self.data)
@@ -59,8 +60,8 @@ class Model:
         self.model = model
         self.app = app
         self.socketio = socketio
-        self.default_params = Config.DEFAULT_PARAMS['mlp'].copy()
-        self.default_params.update(Config.DEFAULT_PARAMS_UNDER['mlp'])
+        self.default_params = Config.DEFAULT_PARAMS['linear']['mlp'].copy()
+        self.default_params.update(Config.DEFAULT_PARAMS_UNDER['linear']['mlp'])
         self.metric_data = {
             'modelName': 'mlp',
             'epoch': [],
@@ -79,12 +80,14 @@ class Model:
 
         # 设置模型参数
         self.default_params.update(custom_params)
-        train_size = self.default_params.get('train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
+        train_size = self.default_params.get(
+            'train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
         # self.default_params.pop('train_size')
         print(train_size)
 
         # 对数据集进行预处理，例如划分训练集和验证集
-        train_X, valid_X, train_y, valid_y = data_preprocess(dataset, label, train_size=train_size)
+        train_X, valid_X, train_y, valid_y = data_preprocess(
+            dataset, label, train_size=train_size)
         self.app.logger.info('dataset split')
         train_dataset = MyDataset(train_X, train_y)
         valid_dataset = MyDataset(valid_X, valid_y)
@@ -111,9 +114,11 @@ class Model:
         input_size = train_X.shape[1]
         output_size = 1
 
-        hidden_size = custom_params.get('hidden_size', self.default_params['hidden_size'])
+        hidden_size = custom_params.get(
+            'hidden_size', self.default_params['hidden_size'])
         lr = custom_params.get('lr', self.default_params['lr'])
-        num_epochs = custom_params.get('num_epochs', self.default_params['num_epochs'])
+        num_epochs = custom_params.get(
+            'num_epochs', self.default_params['num_epochs'])
 
         # 初始化模型
         self.model = MLP(input_size, hidden_size, output_size)
@@ -168,8 +173,10 @@ class Model:
                 optimizer.step()
 
             # 计算训练集和验证集的指标
-            train_metrics, train_loss = eval_model(self.model, train_dataloader, type='train')
-            valid_metrics, valid_loss = eval_model(self.model, valid_dataloader, type='valid')
+            train_metrics, train_loss = eval_model(
+                self.model, train_dataloader, type='train')
+            valid_metrics, valid_loss = eval_model(
+                self.model, valid_dataloader, type='valid')
             best_acc = max(best_acc, valid_metrics['acc'])
 
             if best_acc == valid_metrics['acc']:
@@ -182,7 +189,8 @@ class Model:
             self.metric_data['validLoss'].append(valid_loss)
 
             progress = (epoch + 1) / num_epochs * 100
-            self.socketio.emit('train-message', {'modelName': 'mlp', 'progress': progress})
+            self.socketio.emit(
+                'train-message', {'modelName': 'mlp', 'progress': progress})
             # print(f'Epoch [{epoch}/{num_epochs}]')
 
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
@@ -200,7 +208,8 @@ class Model:
 
     def predict(self, dataset_path):
         if self.model is None:
-            self.app.logger.warning("Model not trained yet. Train the model before making predictions.")
+            self.app.logger.warning(
+                "Model not trained yet. Train the model before making predictions.")
         self.app.logger.info('predicting ... ')
         data = load_dataset(dataset_path)
         data = torch.tensor(data.values, dtype=torch.float32)

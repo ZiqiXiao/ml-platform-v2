@@ -30,10 +30,13 @@ class Config:
     # Upload folder
     UPLOAD_TRAIN_FOLDER = os.path.join(BASE_DIR, 'data', 'uploads', 'train')
     """The upload folder for training data."""
-    UPLOAD_PREDICT_FOLDER = os.path.join(BASE_DIR, 'data', 'uploads', 'predict')
+    UPLOAD_PREDICT_FOLDER = os.path.join(
+        BASE_DIR, 'data', 'uploads', 'predict')
     """The upload folder for prediction data."""
-    UPLOAD_TMP_TRAIN_FOLDER = os.path.join(BASE_DIR, 'data', 'uploads', 'tmp', 'train')
-    UPLOAD_TMP_PREDICT_FOLDER = os.path.join(BASE_DIR, 'data', 'uploads', 'tmp', 'predict')
+    UPLOAD_TMP_TRAIN_FOLDER = os.path.join(
+        BASE_DIR, 'data', 'uploads', 'tmp', 'train')
+    UPLOAD_TMP_PREDICT_FOLDER = os.path.join(
+        BASE_DIR, 'data', 'uploads', 'tmp', 'predict')
 
     ALLOWED_EXTENSIONS = {'csv'}
     """The allowed extensions for the uploading files."""
@@ -41,7 +44,11 @@ class Config:
     """A dictionary stores all the name of model and its package to be imported."""
 
     # Model Storage folder
-    MODEL_FOLDER = os.path.join(BASE_DIR, 'data', 'models')
+    MODEL_FOLDER = {
+        'linear': os.path.join(BASE_DIR, 'data', 'models', 'linear'),
+        'binary_classification': os.path.join(BASE_DIR, 'data', 'models', 'binary_classification'),
+        'multiple_classification': os.path.join(BASE_DIR, 'data', 'models', 'multiple_classification')
+    }
     """The folder to store the model."""
 
     # Template Storage folder
@@ -63,48 +70,94 @@ class Config:
 
     # Model Structure files
     MODEL_STRUCTURE = {
-        'xgboost': 'app.models.xgboost',
-        'mlp': 'app.models.mlp',
-        'svr': 'app.models.svr',
-        'lr': 'app.models.lr',
-        'rf': 'app.models.rf',
+        'linear': {'xgboost': 'app.models.linear.xgboost',
+                   'mlp': 'app.models.linear.mlp',
+                   'svr': 'app.models.linear.svr',
+                   'lr': 'app.models.linear.lr',
+                   'rf': 'app.models.linear.rf', },
 
+        'binary_classification': {'lg': 'app.models.binary_classification.lg',
+                                  'xgboost': 'app.models.binary_classification.xgboost',
+                                  'svc': 'app.models.binary_classification.svc',
+                                  'mlp': 'app.models.binary_classification.mlp',
+                                  'rf': 'app.models.binary_classification.rf',},
+
+        'multiple_classification': {'lg': 'app.models.multiple_classification.lg'},
     }
 
     DEFAULT_PARAMS = {
-        'xgboost': {'num_boost_round': 20,
-                    'eta': 0.1,
-                    'max_depth': 6,
-                    'subsample': 0.8,
-                    'colsample_bytree': 0.8,
-                    'objective': 'reg:squarederror', },
+        'linear': {'xgboost': {'num_boost_round': 20,
+                               'eta': 0.1,
+                               'max_depth': 6,
+                               'subsample': 0.8,
+                               'colsample_bytree': 0.8, },
 
-        'mlp': {'num_epochs': 200,
-                'hidden_size': 64,
-                'lr': 0.01, },
+                   'mlp': {'num_epochs': 200,
+                           'hidden_size': 64,
+                           'lr': 0.01, },
 
-        'svr': {'kernel': 'rbf',
-                'gamma': 'scale',
-                'C': 1.0, },
+                   'svr': {},
 
-        'lr': {},
+                   'lr': {},
 
-        'rf': {'n_estimators': 100,
-               'max_depth': 4,
-               'random_state': 42},
+                   'rf': {'n_estimators': 100,
+                          'max_depth': 4,
+                          'random_state': 42}, },
+
+        'binary_classification': {'lg': {'max_iter': 200},
+
+                                  'xgboost': {'num_boost_round': 20,
+                                              'eta': 0.1,
+                                              'max_depth': 6,
+                                              'subsample': 0.8,
+                                              'colsample_bytree': 0.8, },
+
+                                  'svc': {},
+
+                                  'mlp': {'num_epochs': 200,
+                                          'hidden_size': 32,
+                                          'lr': 0.001, },
+
+                                  'rf': {'n_estimators': 100,
+                                         'max_depth': 4,
+                                         'random_state': 42},
+                                  }
+
     }
     """The default parameters(hyperparameter) for the models that is showed on the frontpage."""
 
     DEFAULT_PARAMS_UNDER = {
-        'xgboost': {},
+        'linear': {
+            'xgboost': {'objective': 'reg:squarederror', },
 
-        'mlp': {},
+            'mlp': {},
 
-        'svr': {},
+            'svr': {'kernel': 'linear',
+                    'gamma': 'scale',
+                    'C': 1.0, },
 
-        'lr': {},
+            'lr': {},
 
-        'rf': {},
+            'rf': {},
+        },
+
+        'binary_classification': {
+            'lg': {'penalty': 'l2', },
+
+            'xgboost': {'objective': 'binary:logistic', },
+
+            'svc': {'probability': True,
+                    'kernel': 'linear',
+                    'gamma': 'scale',
+                    'C': 1.0, },
+
+            'mlp': {},
+
+            'rf': {},
+        },
+
+        'multiple_classification': {},
+
     }
     """The default parameters(hyperparameter) for the models that is not showed on the frontpage."""
 

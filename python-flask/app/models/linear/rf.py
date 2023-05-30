@@ -1,7 +1,7 @@
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-from app.models.utils import cal_metrics, data_preprocess, load_dataset
+from sklearn.metrics import mean_squared_error
+from app.models.linear.utils import cal_metrics, data_preprocess, load_dataset
 import os
 import joblib
 import pandas as pd
@@ -11,16 +11,17 @@ from config import Config
 
 class Model:
     """
-    Linear Regression模型
+    Random Forest Regression模型
     """
+
     def __init__(self, model=None, app=None, socketio=None):
         self.model = model
         self.app = app
         self.socketio = socketio
-        self.default_params = Config.DEFAULT_PARAMS['lr'].copy()
-        self.default_params.update(Config.DEFAULT_PARAMS_UNDER['lr'])
+        self.default_params = Config.DEFAULT_PARAMS['linear']['rf'].copy()
+        self.default_params.update(Config.DEFAULT_PARAMS_UNDER['linear']['rf'])
         self.metric_data = {
-            'modelName': 'lr',
+            'modelName': 'rf',
             'epoch': [],
             'trainLoss': [],
             'validLoss': [],
@@ -37,30 +38,37 @@ class Model:
 
         # 设置模型参数
         self.default_params.update(custom_params)
-        train_size = self.default_params.get('train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
-        print(train_size)
+        train_size = self.default_params.get(
+            'train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
+        # self.default_params.pop('train_size')
 
         # 对数据集进行预处理，例如划分训练集和验证集
-        train_X, valid_X, train_y, valid_y = data_preprocess(dataset, label, train_size=train_size)
+        train_X, valid_X, train_y, valid_y = data_preprocess(
+            dataset, label, train_size=train_size)
         self.app.logger.info('dataset split')
 
         # 训练模型
-        self.app.logger.info('training model lr ... ')
-        self.model = LinearRegression(**self.default_params)
+        self.app.logger.info('training model rf ... ')
+        self.model = RandomForestRegressor(**self.default_params)
         self.model.fit(train_X, train_y)
 
-        train_metrics = cal_metrics(train_y, self.model.predict(train_X), type='train')
-        valid_metrics = cal_metrics(valid_y, self.model.predict(valid_X), type='valid')
+        train_metrics = cal_metrics(
+            train_y, self.model.predict(train_X), type='train')
+        valid_metrics = cal_metrics(
+            valid_y, self.model.predict(valid_X), type='valid')
 
-        self.socketio.emit('train-message', {'modelName': 'lr', 'progress': 100})
+        self.socketio.emit(
+            'train-message', {'modelName': 'rf', 'progress': 100})
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
         self.socketio.emit('eval-message', self.metric_data)
+
         self.app.logger.info('training successfully')
         return self.model
 
     def predict(self, dataset_path):
         if self.model is None:
-            self.app.logger.info("Model not trained yet. Train the model before making predictions.")
+            self.app.logger.info(
+                "Model not trained yet. Train the model before making predictions.")
         self.app.logger.info('predicting ... ')
         data = load_dataset(dataset_path)
         predicted = self.model.predict(data)
@@ -68,7 +76,8 @@ class Model:
 
     def save_model(self, model_path):
         if self.model is None:
-            self.app.logger.warning("Model not trained yet. Train the model before saving.")
+            self.app.logger.warning(
+                "Model not trained yet. Train the model before saving.")
         joblib.dump(self.model, model_path)
         self.app.logger.info('model saved')
 

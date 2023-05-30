@@ -32,11 +32,13 @@ def init_train_routes(app, socketio):
         filepath = request.get_json()['filePath']
         models = request.get_json()['model']
         label = request.get_json()['label']
+        mission = request.get_json()['mission']
 
         model_dict['filepath'] = filepath
+        model_dict['mission'] = mission
 
         threading.Thread(target=train_scheduler, args=(
-            app, socketio, filepath, models, label, model_dict)).start()
+            app, socketio, filepath, models, mission, label, model_dict)).start()
         return jsonify(status=http.HTTPStatus.OK)
 
     @app.route('/save-model', methods=['Post'])
@@ -53,7 +55,7 @@ def init_train_routes(app, socketio):
         model_save_path_list = []
         # 保存模型
         for index, model_name in enumerate(model_names):
-            model_save_path = os.path.join(Config.MODEL_FOLDER, model_classes[index], model_name + '.joblib')
+            model_save_path = os.path.join(Config.MODEL_FOLDER[model_dict['mission']], model_classes[index], model_name + '.joblib')
             app.logger.info(model_dict[model_classes[index]])
             joblib.dump(model_dict[model_classes[index]], model_save_path)
             model_save_path_list.append(model_save_path)
@@ -122,8 +124,9 @@ def init_train_routes(app, socketio):
         model_name = request.get_json()['modelName']
         new_model_name = request.get_json()['newName']
         model_class = request.get_json()['modelClass']
-        file_path = os.path.join(Config.MODEL_FOLDER, model_class, model_name + '.joblib')
-        new_file_path = os.path.join(Config.MODEL_FOLDER, model_class, new_model_name + '.joblib')
+        mission = request.get_json()['mission']
+        file_path = os.path.join(Config.MODEL_FOLDER[mission], model_class, model_name + '.joblib')
+        new_file_path = os.path.join(Config.MODEL_FOLDER[mission], model_class, new_model_name + '.joblib')
         if os.path.exists(file_path):
             os.rename(file_path, new_file_path)
             return jsonify(message={'message': 'File renamed successfully'}, newPath=new_file_path), http.HTTPStatus.OK
@@ -134,9 +137,20 @@ def init_train_routes(app, socketio):
     def delete_model():
         model_name = request.get_json()['modelName']
         model_class = request.get_json()['modelClass']
-        file_path = os.path.join(Config.MODEL_FOLDER, model_class, model_name + '.joblib')
+        mission = request.get_json()['mission']
+        file_path = os.path.join(Config.MODEL_FOLDER[mission], model_class, model_name + '.joblib')
         if os.path.exists(file_path):
             os.remove(file_path)
             return jsonify(message={'message': 'File removed successfully'}), http.HTTPStatus.OK
         else:
             return jsonify(massage={'message': 'File not found'}), http.HTTPStatus.NOT_FOUND
+
+    @app.route('/download-template', methods=['POST'])
+    def download_template():
+        print(request.get_json())
+        template_path = request.get_json()['templatePath']
+        if os.path.exists(template_path):
+            app.logger.info(f"Download predict result: {template_path}")
+            return send_file(template_path, as_attachment=True)
+        else:
+            return jsonify(message='Predict result not found'), http.HTTPStatus.NOT_FOUND

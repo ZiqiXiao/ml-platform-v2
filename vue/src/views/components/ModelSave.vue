@@ -41,7 +41,7 @@
       </thead>
       <tbody>
       <tr v-for="(metricObj, index) in metricsSum" :key="index" class="align-middle text-center text-sm">
-        <td>{{ modelName[Object.keys(metricObj)[0]] }}</td>
+        <td>{{ modelName[mission][Object.keys(metricObj)[0]] }}</td>
         <td><input v-model="checkboxStatus[index]" type="checkbox"/></td>
         <td><input v-show="checkboxStatus[index]" v-model="modelSaveName[index]" type="text" :disabled="!checkboxStatus[index]"/></td>
         <td><button class="btn btn-sm btn-behance" :disabled="!checkboxStatus[index]" @click="checkName(index)">检查</button></td>
@@ -71,6 +71,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    mission: {
+      type: String,
+      default: () => {},
+    }
   },
 
   data() {

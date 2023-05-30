@@ -16,7 +16,8 @@ export default createStore({
     showFooter: true,
     showMain: true,
     userRoles: [],
-    username: ''
+    username: '',
+    isLogIn: false,
   },
   mutations: {
     toggleConfigurator(state) {
@@ -55,6 +56,9 @@ export default createStore({
     },
     setUsername(state, username) {
       state.username = username;
+    },
+    setIsLogIn(state) {
+      state.isLogIn = true;
     },
   },
   actions: {

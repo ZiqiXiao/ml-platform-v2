@@ -21,26 +21,25 @@ import SoftUIDashboard from "./soft-ui-dashboard";
 
 import Keycloak from "keycloak-js";
 
+
+
 // 创建一个新的 Keycloak 实例
 const keycloak = new Keycloak({
   url: 'http://127.0.0.1:8081',  // 替换为你的 Keycloak 服务器地址
   realm: 'vue',  // 替换为你的 realm
   clientId: 'vuejs',  // 替换为你的 client ID
-  redirectUri: 'http://127.0.0.1:3000/models',  // 替换为你的应用的 URL
+  redirectUri: 'http://127.0.0.1:3000/',  // 替换为你的应用的 URL
   locale: 'zh',
 });
+
+// keycloak.updateToken(60)
 // 初始化 Keycloak
 keycloak.init({onLoad: 'login-required'}).then(authenticated => {
   if (authenticated) {
-    const app = createApp(App)
-    app.use(store)
-    app.use(router)
-    app.use(SoftUIDashboard)
-    app.mount('#app')
-    app.config.globalProperties.$keycloak = keycloak
-    console.log(keycloak.tokenParsed)
+    // console.log(keycloak.tokenParsed)
     const userRoles = keycloak.tokenParsed.realm_access.roles;
     const username = keycloak.tokenParsed.preferred_username;
+    localStorage.setItem('userRoles',userRoles);
     store.commit('setUserRoles', userRoles);
     store.commit('setUsername', username);
   } else {
@@ -51,5 +50,12 @@ keycloak.init({onLoad: 'login-required'}).then(authenticated => {
   // 如果在初始化 Keycloak 时发生错误，那么在这里处理它
   console.error('Keycloak initialization failed',error)
 });
+
+const app = createApp(App)
+app.use(store)
+app.use(router)
+app.use(SoftUIDashboard)
+app.mount('#app')
+app.config.globalProperties.$keycloak = keycloak
 
 export default keycloak;

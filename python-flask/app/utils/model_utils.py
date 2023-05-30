@@ -15,6 +15,7 @@ def train_scheduler(
         socketio: object,
         filename: str,
         model: dict,
+        mission: str,
         label: str = Config.DEFAULT_OTHER_PARAMS['label'],
         model_dict: dict = None,
 ):
@@ -46,7 +47,7 @@ def train_scheduler(
             for idx, val in p.items():
                 if not val and Config.DEFAULT_PARAMS[m]:
                     p[idx] = Config.DEFAULT_PARAMS[m][idx]
-            model = training(app, filename, m, label, p, socketio)
+            model = training(app, filename, mission, m, label, p, socketio)
             model_dict[m] = model
         model_dict['label'] = label
         # socketio.emit('training-finished')
@@ -57,14 +58,14 @@ def train_scheduler(
         #                                'type': 'error'})
 
 
-def training(app, filename, model_class, label='label', param=None, socketio=None):
+def training(app, filename, mission, model_class, label='label', param=None, socketio=None):
     app.logger.info(
         f"Training {model_class} model with {filename} dataset and label {label}")
     # Load the dataset from the uploaded file
     dataset_path = os.path.join(Config.UPLOAD_TMP_TRAIN_FOLDER, filename)
 
     # Load the specified model module
-    model_module_name = Config.MODEL_STRUCTURE[model_class]
+    model_module_name = Config.MODEL_STRUCTURE[mission][model_class]
     model_module = importlib.import_module(model_module_name)
 
     # Initialize the model
@@ -80,7 +81,8 @@ def training(app, filename, model_class, label='label', param=None, socketio=Non
 def predict(app, file_path, model_path, socketio=None):
     # Load the dataset from the uploaded file
     model_class = model_path.split(os.sep)[-2]
-    model_module_name = Config.MODEL_STRUCTURE[model_class]
+    mission = model_path.split(os.sep)[-3]
+    model_module_name = Config.MODEL_STRUCTURE[mission][model_class]
 
     model_module = importlib.import_module(model_module_name)
 

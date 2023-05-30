@@ -1,6 +1,6 @@
 <template>
   <div class="chart-container">
-    <h4>Loss</h4>
+    <h4>损失曲线</h4>
     <Line :ref="'chart-' + chartName" :data="chartData" :options="chartOptions" />
   </div>
 </template>

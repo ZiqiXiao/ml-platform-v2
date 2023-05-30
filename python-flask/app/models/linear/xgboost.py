@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, mean_squared_error
 import os
 import joblib
 import pandas as pd
-from app.models.utils import cal_metrics, load_dataset, data_preprocess
+from app.models.linear.utils import cal_metrics, load_dataset, data_preprocess
 import numpy as np
 from config import Config
 
@@ -47,8 +47,8 @@ class Model:
         self.model = model
         self.app = app
         self.socketio = socketio
-        self.default_params = Config.DEFAULT_PARAMS['xgboost'].copy()
-        self.default_params.update(Config.DEFAULT_PARAMS_UNDER['xgboost'])
+        self.default_params = Config.DEFAULT_PARAMS['linear']['xgboost'].copy()
+        self.default_params.update(Config.DEFAULT_PARAMS_UNDER['linear']['xgboost'])
         self.metric_data = {
             'modelName': 'xgboost',
             'epoch': [],
@@ -90,8 +90,10 @@ class Model:
             callbacks=[progress_callback]
         )
 
-        train_metrics = cal_metrics(np.array(train_y), np.array(self.model.predict(dtrain)), type='train')
-        valid_metrics = cal_metrics(np.array(valid_y), np.array(self.model.predict(dvalid)), type='valid')
+        train_metrics = cal_metrics(np.array(train_y), np.array(
+            self.model.predict(dtrain)), type='train')
+        valid_metrics = cal_metrics(np.array(valid_y), np.array(
+            self.model.predict(dvalid)), type='valid')
 
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
         self.socketio.emit('eval-message', self.metric_data)

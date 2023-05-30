@@ -2,12 +2,12 @@
   <div>
     <div v-for="(algorithm, index) in algorithms" :key="index" class="card">
       <div class="card-header">
-        <input :id="algorithm.name" v-model="algorithm.checked" type="checkbox" />
-        <label :for="algorithm.name" class="model-name">{{ modelName[algorithm.name] }}</label>
+        <input :id="algorithm.algorithmName" v-model="algorithm.checked" type="checkbox" />
+        <label :for="algorithm.algorithmName" class="model-name">{{ modelName[mission][algorithm.algorithmName] }}</label>
       </div>
       <div v-if="algorithm.checked && algorithm.params.length > 0" class="card-body">
         <div v-for="(param, paramIndex) in algorithm.params" :key="paramIndex" class="input-container">
-          <label class="param-name">{{ paramName[param.name] }}</label>
+          <label class="param-name">{{ paramName[mission][algorithm.algorithmName][param.name] }}</label>
           <input v-model="param.value" :type="param.type" />
         </div>
       </div>
@@ -21,15 +21,23 @@
 <script>
 import ModelName from "@/utils/ModelName";
 import ParamName from "@/utils/ParamName";
-import axios from "axios";
-import serviceRoute from "@/utils/service-route";
 
 export default {
   name: "TrainModel",
 
+  props: {
+    algorithms: {
+      type: Array,
+      required: true,
+    },
+    mission:{
+      type: String,
+      required: true,
+    }
+  },
+
   data() {
     return {
-      algorithms: [],
       modelName: ModelName,
       paramName: ParamName,
       model: null,
@@ -37,25 +45,13 @@ export default {
   },
 
   watch: {
-  },
-
-  async created() {
-    try {
-      const response = await axios.get(serviceRoute["python-flask"] + "/model-params");
-      const responseData = response.data;
-      this.algorithms = Object.entries(responseData).map(([name, params]) => ({
-        name,
-        params: Object.entries(params).map(([paramName, paramValue]) => ({
-          name: paramName,
-          value: paramValue,
-          type: typeof paramValue
-        })),
-        checked: false,
-      }));
-      console.log(this.algorithms)
-    } catch (error) {
-      console.error("Error fetching algorithm data:", error);
-    }
+    // algorithms(newValue) {
+    //   console.log("New algorithms value:", newValue);
+    // },
+    //
+    // mission(newValue) {
+    //   console.log("New mission value:", newValue);
+    // },
   },
 
   methods: {
@@ -63,7 +59,7 @@ export default {
       this.model = this.algorithms
         .filter((algorithm) => algorithm.checked)
         .reduce((acc, algorithm) => {
-          acc[algorithm.name] = algorithm.params
+          acc[algorithm.algorithmName] = algorithm.params
             .filter((param) => param.value)
             .reduce((paramsAcc, param) => {
               paramsAcc[param.name] = param.value;
@@ -71,7 +67,6 @@ export default {
             }, {});
           return acc;
         }, {});
-      console.log(this.model)
       if (Object.keys(this.model).length > 0) {
         try {
           this.$emit("putModel", this.model);
