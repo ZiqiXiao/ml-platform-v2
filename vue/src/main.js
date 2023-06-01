@@ -42,6 +42,7 @@ keycloak.init({onLoad: 'login-required'}).then(authenticated => {
     localStorage.setItem('userRoles',userRoles);
     store.commit('setUserRoles', userRoles);
     store.commit('setUsername', username);
+    router.push('/auth-callback');
   } else {
     // 如果用户未登录，那么重定向到登录页面
     window.location.reload();

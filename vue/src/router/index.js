@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory} from "vue-router";
+import {createRouter, createWebHashHistory} from "vue-router";
 import ModelsPage from "@/views/Models.vue";
 import SignIn from "@/views/SignIn.vue";
 import SignUp from "@/views/SignUp.vue";
@@ -10,13 +10,6 @@ import Dataset from "@/views/Dataset.vue";
 import store from "@/store";
 
 const routes = [
-  // {
-  //   path: "/",
-  //   name: "/",
-  //   redirect: "/models",
-  //   // meta: { requiresAuth: true }
-  //   meta: { roles: ["admin", 'predict'] }
-  // },
   {
     path: "/",
     name: "Models",
@@ -66,36 +59,34 @@ const routes = [
     component: Dataset,
     meta: { roles: ["admin"] }
   },
-  // {
-  //   path: '/callback',
-  //   component: CallbackComponent,
-  //   meta: { roles: ["admin"] }
-  // },
-  // 如果使用通配符，确保它是最后一个路由，因为路由会按顺序匹配
-  // {
-  //   path: '*',
-  //   component: NotFoundComponent
-  // }
+  {
+    path: '/auth-callback',
+    name: 'Auth Callback',
+    beforeEnter(to, from, next) {
+      console.log(to)
+      next('/');
+    },
+  }
 ];
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
+  // history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   linkActiveClass: "active",
 });
 
 router.beforeEach((to, from, next) => {
-  const userRoles = store.state.userRoles;
-
-  // console.log(from)
-  // console.log(to)
-  // console.log(userRoles);
-  // console.log(userRoles);
-  if (to.meta.roles && !to.meta.roles.some(role => userRoles.includes(role))) {
-    // 如果用户没有访问权限，可以重定向到错误页面或者首页等
-    next({ path: "/error" });
-  } else {
+  if (to.name === 'Auth Callback') {
     next();
+  } else {
+    const userRoles = store.state.userRoles;
+    if (to.meta.roles && !to.meta.roles.some(role => userRoles.includes(role))) {
+      next({ path: "/error" });
+    } else {
+      store.commit("setCurrentPath", to.path);
+      next();
+    }
   }
 });
 

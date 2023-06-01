@@ -11,7 +11,9 @@
         <result-graph v-if="chart.confusionMatrix" :graph-info="chart.confusionMatrix" :title="confusionMatrixTitle"/>
         <result-graph v-if="chart.rocCurve" :title="rocCurveTitle" :graph-info="chart.rocCurve" />
         <result-graph v-if="chart.featureImportance" :title="featureImportanceTitle" :graph-info="chart.featureImportance" />
-        <MetricTable v-if="chart.chartData" :table-data="chart.chartData.metrics" :mission="mission" />
+        <div class="scrollable-table">
+          <MetricTable v-if="chart.chartData" :table-data="chart.chartData.metrics" :mission="mission" />
+        </div>
       </div>
     </div>
     <div class="card">

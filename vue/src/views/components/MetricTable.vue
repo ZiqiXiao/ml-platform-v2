@@ -9,6 +9,11 @@
 		<th>R2</th>
 		<th>RMSE - 均方根误差</th>
     <th v-if="mission === 'binary_classification'">AUC - 曲线下面积</th>
+    <th
+        v-for="(auc, auc_index) in tableData[0].auc"
+        v-else-if="mission === 'multiple_classification'"
+        :key="auc_index"
+    >类别-{{ auc_index }}-AUC - 曲线下面积</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -20,6 +25,11 @@
 			<td>{{ row.r2.toFixed(4) }}</td>
 			<td>{{ row.rmse.toFixed(4) }}</td>
       <td v-if="mission === 'binary_classification'">{{ row.auc.toFixed(4) }}</td>
+      <td
+          v-for="(auc, auc_index) in row.auc"
+          v-else-if="mission === 'multiple_classification'"
+          :key="auc_index"
+      >{{ auc.toFixed(4) }}</td>
     </tr>
 	</tbody>
 </table>
@@ -46,6 +56,7 @@ export default {
 		}
 	},
 	mounted() {
+    console.log(this.trainData)
 	},
 };
 </script>

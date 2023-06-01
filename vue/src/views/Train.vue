@@ -16,6 +16,7 @@
             <div class="card-body">
               <train-model v-if="currentTab === 'linear'" :algorithms="linearAlgorithms" :mission="linearMission" @putModel="getModel"/>
               <train-model v-if="currentTab === 'binary_classification'" :algorithms="binaryClassificationAlgorithms" :mission="binaryClassificationMission" @putModel="getModel"/>
+              <train-model v-if="currentTab === 'multiple_classification'" :algorithms="multipleClassificationAlgorithms" :mission="multipleClassificationMission" @putModel="getModel"/>
               <!-- Add more models for other tabs here -->
             </div>
           </div>

@@ -13,6 +13,12 @@ export default {
     "mlp": "Multi Layer Perceptron - 多层感知机",
     "rf": "Random Forest - 随机森林",
   },
-  "multi_classification": {},
+  "multiple_classification": {
+    'lg': 'Logistic Regression - 逻辑回归',
+    'xgboost': 'XGBoost - 极端梯度提升',
+    "mlp": "Multi Layer Perceptron - 多层感知机",
+    "rf": "Random Forest - 随机森林",
+    "svc": "Support Vector Classification - 支持向量分类",
+  },
 
 };

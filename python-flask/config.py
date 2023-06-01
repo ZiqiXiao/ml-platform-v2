@@ -70,58 +70,86 @@ class Config:
 
     # Model Structure files
     MODEL_STRUCTURE = {
-        'linear': {'xgboost': 'app.models.linear.xgboost',
-                   'mlp': 'app.models.linear.mlp',
-                   'svr': 'app.models.linear.svr',
-                   'lr': 'app.models.linear.lr',
-                   'rf': 'app.models.linear.rf', },
+        'linear': {
+            'xgboost': 'app.models.linear.xgboost',
+            'mlp': 'app.models.linear.mlp',
+            'svr': 'app.models.linear.svr',
+            'lr': 'app.models.linear.lr',
+            'rf': 'app.models.linear.rf', },
 
-        'binary_classification': {'lg': 'app.models.binary_classification.lg',
-                                  'xgboost': 'app.models.binary_classification.xgboost',
-                                  'svc': 'app.models.binary_classification.svc',
-                                  'mlp': 'app.models.binary_classification.mlp',
-                                  'rf': 'app.models.binary_classification.rf',},
+        'binary_classification': {
+            'lg': 'app.models.binary_classification.lg',
+            'xgboost': 'app.models.binary_classification.xgboost',
+            'svc': 'app.models.binary_classification.svc',
+            'mlp': 'app.models.binary_classification.mlp',
+            'rf': 'app.models.binary_classification.rf', },
 
-        'multiple_classification': {'lg': 'app.models.multiple_classification.lg'},
+        'multiple_classification': {
+            'lg': 'app.models.multiple_classification.lg',
+            'xgboost': 'app.models.multiple_classification.xgboost',
+            'mlp': 'app.models.multiple_classification.mlp',
+            'svc': 'app.models.multiple_classification.svc',
+            'rf': 'app.models.multiple_classification.rf', },
     }
 
     DEFAULT_PARAMS = {
-        'linear': {'xgboost': {'num_boost_round': 20,
-                               'eta': 0.1,
-                               'max_depth': 6,
-                               'subsample': 0.8,
-                               'colsample_bytree': 0.8, },
+        'linear': {
+            'xgboost': {'num_boost_round': 20,
+                        'eta': 0.1,
+                        'max_depth': 6,
+                        'subsample': 0.8,
+                        'colsample_bytree': 0.8, },
 
-                   'mlp': {'num_epochs': 200,
-                           'hidden_size': 64,
-                           'lr': 0.01, },
+            'mlp': {'num_epochs': 200,
+                    'hidden_size': 64,
+                    'lr': 0.01, },
 
-                   'svr': {},
+            'svr': {},
 
-                   'lr': {},
+            'lr': {},
 
-                   'rf': {'n_estimators': 100,
-                          'max_depth': 4,
-                          'random_state': 42}, },
+            'rf': {'n_estimators': 100,
+                   'max_depth': 4,
+                   'random_state': 42}, },
 
-        'binary_classification': {'lg': {'max_iter': 200},
+        'binary_classification': {
+            'lg': {'max_iter': 200},
 
-                                  'xgboost': {'num_boost_round': 20,
-                                              'eta': 0.1,
-                                              'max_depth': 6,
-                                              'subsample': 0.8,
-                                              'colsample_bytree': 0.8, },
+            'xgboost': {'num_boost_round': 20,
+                        'eta': 0.1,
+                        'max_depth': 6,
+                        'subsample': 0.8,
+                        'colsample_bytree': 0.8, },
 
-                                  'svc': {},
+            'svc': {},
 
-                                  'mlp': {'num_epochs': 200,
-                                          'hidden_size': 32,
-                                          'lr': 0.001, },
+            'mlp': {'num_epochs': 200,
+                    'hidden_size': 32,
+                    'lr': 0.001, },
 
-                                  'rf': {'n_estimators': 100,
-                                         'max_depth': 4,
-                                         'random_state': 42},
-                                  }
+            'rf': {'n_estimators': 100,
+                   'max_depth': 4,
+                   'random_state': 42},
+        },
+        'multiple_classification': {
+            'lg': {'max_iter': 200},
+
+            'xgboost': {'num_boost_round': 20,
+                        'eta': 0.1,
+                        'max_depth': 6,
+                        'subsample': 0.8,
+                        'colsample_bytree': 0.8, },
+
+            'mlp': {'num_epochs': 200,
+                    'hidden_size': 32,
+                    'lr': 0.001, },
+
+            'svc': {},
+
+            'rf': {'n_estimators': 100,
+                   'max_depth': 4,
+                   'random_state': 42},
+        },
 
     }
     """The default parameters(hyperparameter) for the models that is showed on the frontpage."""
@@ -156,7 +184,20 @@ class Config:
             'rf': {},
         },
 
-        'multiple_classification': {},
+        'multiple_classification': {
+            'lg': {'penalty': 'l2', },
+
+            'xgboost': {'objective': 'multi:softprob', },
+
+            'mlp': {},
+
+            'svc': {'probability': True,
+                    'kernel': 'linear',
+                    'gamma': 'scale',
+                    'C': 1.0, },
+
+            'rf': {},
+        },
 
     }
     """The default parameters(hyperparameter) for the models that is not showed on the frontpage."""

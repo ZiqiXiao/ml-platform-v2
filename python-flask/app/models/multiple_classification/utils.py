@@ -1,8 +1,12 @@
+from itertools import cycle
+
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import label_binarize
+
 from config import Config
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, accuracy_score, confusion_matrix, \
-    roc_auc_score, roc_curve, ConfusionMatrixDisplay, RocCurveDisplay
+    roc_auc_score, roc_curve, ConfusionMatrixDisplay, RocCurveDisplay, auc
 from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 import datetime
@@ -18,14 +22,33 @@ def cal_confusion_matrix(y_true, y_pred, type):
     return save_path
 
 
-def cal_roc_curve(y_true, y_pred_proba, auc, type):
+def cal_roc_curve(y_true, y_pred_proba, type):
     plt.figure()
-    fpr, tpr, _ = roc_curve(y_true, y_pred_proba)
-    disp = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=auc)
-    disp.plot()
+    y_test_bin = label_binarize(y_true, classes=np.unique(y_true))
+    n_classes = y_test_bin.shape[1]
+    # 计算每一类的ROC
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_test_bin[:, i], y_pred_proba[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+    # 绘制所有的ROC曲线
+    colors = cycle(['aqua', 'darkorange', 'cornflowerblue', 'deeppink', 'navy', 'red', 'green', 'yellow', 'black'])
+    for i, color in zip(range(n_classes), colors):
+        plt.plot(fpr[i], tpr[i], color=color, label='ROC curve of class {0} (area = {1:0.2f})'.format(i, roc_auc[i]))
+
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic for multi-class data')
+    plt.legend(loc="lower right")
+    plt.show()
     save_path = f"data/tmp/roc_curve/{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}-{type}-roc_curve.png"
     plt.savefig(save_path)
-    return save_path
+    return save_path, roc_auc
 
 
 def cal_feature_importance(model):
@@ -52,10 +75,7 @@ def cal_feature_importance(model):
 
 
 def cal_metrics(y_true, y_pred, y_pred_proba, type='train'):
-    print(f'y_true: {y_true}')
-    print(f'y_pred: {y_pred}')
-    print(f'y_pred_proba: {y_pred_proba}')
-
+    print(y_pred_proba)
     acc = accuracy_score(y_true, y_pred)
 
     mse = mean_squared_error(y_true, y_pred)
@@ -68,9 +88,7 @@ def cal_metrics(y_true, y_pred, y_pred_proba, type='train'):
 
     cm = cal_confusion_matrix(y_true, y_pred, type)
 
-    auc = roc_auc_score(y_true, y_pred_proba)
-
-    roc = cal_roc_curve(y_true, y_pred_proba, auc, type)
+    roc, auc_scores = cal_roc_curve(y_true, y_pred_proba, type)
 
     return {
         'dataset': f'{type}',
@@ -79,7 +97,7 @@ def cal_metrics(y_true, y_pred, y_pred_proba, type='train'):
         'mae': float(mae),
         'rmse': float(rmse),
         'r2': float(r2),
-        'auc': auc,
+        'auc': auc_scores,
         'roc': roc,
         'cm': cm,
     }

@@ -18,6 +18,7 @@ export default createStore({
     userRoles: [],
     username: '',
     isLogIn: false,
+    currentPath: '/',
   },
   mutations: {
     toggleConfigurator(state) {
@@ -60,6 +61,9 @@ export default createStore({
     setIsLogIn(state) {
       state.isLogIn = true;
     },
+    setCurrentPath(state, path) {
+        state.currentPath = path;
+    }
   },
   actions: {
     toggleSidebarColor({ commit }, payload) {
