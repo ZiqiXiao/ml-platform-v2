@@ -75,21 +75,24 @@ class Config:
             'mlp': 'app.models.linear.mlp',
             'svr': 'app.models.linear.svr',
             'lr': 'app.models.linear.lr',
-            'rf': 'app.models.linear.rf', },
+            'rf': 'app.models.linear.rf',
+            'sl': 'app.models.linear.sl',},
 
         'binary_classification': {
             'lg': 'app.models.binary_classification.lg',
             'xgboost': 'app.models.binary_classification.xgboost',
             'svc': 'app.models.binary_classification.svc',
             'mlp': 'app.models.binary_classification.mlp',
-            'rf': 'app.models.binary_classification.rf', },
+            'rf': 'app.models.binary_classification.rf',
+            'sl': 'app.models.binary_classification.sl', },
 
         'multiple_classification': {
             'lg': 'app.models.multiple_classification.lg',
             'xgboost': 'app.models.multiple_classification.xgboost',
             'mlp': 'app.models.multiple_classification.mlp',
             'svc': 'app.models.multiple_classification.svc',
-            'rf': 'app.models.multiple_classification.rf', },
+            'rf': 'app.models.multiple_classification.rf',
+            'sl': 'app.models.multiple_classification.sl', },
     }
 
     DEFAULT_PARAMS = {
@@ -110,7 +113,15 @@ class Config:
 
             'rf': {'n_estimators': 100,
                    'max_depth': 4,
-                   'random_state': 42}, },
+                   'random_state': 42},
+
+            'sl': {'lr': {},
+                   'svc': {},
+                   'rf': {'n_estimators': 100,
+                          'max_depth': 4,
+                          'random_state': 42},
+                   }
+        },
 
         'binary_classification': {
             'lg': {'max_iter': 200},
@@ -127,9 +138,18 @@ class Config:
                     'hidden_size': 32,
                     'lr': 0.001, },
 
-            'rf': {'n_estimators': 100,
+            'rf': {'n_estimators': 200,
                    'max_depth': 4,
                    'random_state': 42},
+
+            'sl': {
+                'lg': {'max_iter': 200},
+                'svc': {},
+                'rf': {'n_estimators': 100,
+                       'max_depth': 4,
+                       'random_state': 42},
+            }
+
         },
         'multiple_classification': {
             'lg': {'max_iter': 200},
@@ -149,6 +169,14 @@ class Config:
             'rf': {'n_estimators': 100,
                    'max_depth': 4,
                    'random_state': 42},
+
+            'sl': {
+                'lg': {'max_iter': 200},
+                'svc': {},
+                'rf': {'n_estimators': 100,
+                       'max_depth': 4,
+                       'random_state': 42},
+            }
         },
 
     }
@@ -182,6 +210,8 @@ class Config:
             'mlp': {},
 
             'rf': {},
+
+            'sl': {}
         },
 
         'multiple_classification': {
@@ -197,6 +227,8 @@ class Config:
                     'C': 1.0, },
 
             'rf': {},
+
+            'sl': {}
         },
 
     }

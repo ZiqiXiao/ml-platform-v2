@@ -29,7 +29,7 @@
         <h3>保存模型</h3>
       </div>
       <div class="card-body">
-        <model-save :metrics-sum="metricsSum" :mission="mission" />
+        <model-save :metrics-sum="metricsSum" :mission="mission" :existed-train-data-path="existedTrainDataPath"/>
       </div>
     </div>
   </div>
@@ -72,6 +72,7 @@ export default {
       featureImportanceTitle: "Feature Importance-特征重要性",
       rocCurveTitle: "ROC-受试者工作特征曲线",
       metricsSum: [],
+      existedTrainDataPath: '',
     }
   },
 
@@ -80,6 +81,9 @@ export default {
     this.filePath = this.$route.params.filePath;
     this.label = this.$route.params.label;
     this.mission = this.$route.params.mission;
+    if (this.$route.params.usingExistedTrainData) {
+      this.existedTrainDataPath = this.$route.params.filePath;
+    }
     Object.entries(this.model).forEach(([key,]) => {
       this.charts.push({
         name: key,

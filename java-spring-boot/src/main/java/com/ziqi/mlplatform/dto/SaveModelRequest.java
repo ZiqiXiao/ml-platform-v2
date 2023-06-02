@@ -15,6 +15,8 @@ import java.util.List;
 public class SaveModelRequest {
     private List<String> modelName;
     private List<String> modelClass;
+    private List<String> modelDescription;
+    private String existedTrainDataPath;
     private TrainData trainData;
 
 }

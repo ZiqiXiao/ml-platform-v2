@@ -2,6 +2,7 @@ package com.ziqi.mlplatform.Service;
 
 import com.ziqi.mlplatform.Model.TrainData;
 import com.ziqi.mlplatform.dto.TrainDataResponse;
+import com.ziqi.mlplatform.dto.TrainDataWtoModelResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,4 +25,6 @@ public interface ITrainDataService {
     TrainData updateTemplateName(Long id, String templateName);
 
     TrainData getTemplateByName(String templateName);
+
+    TrainData findByFilePath(String filePath);
 }

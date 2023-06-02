@@ -6,6 +6,7 @@ import com.ziqi.mlplatform.Model.PredictData;
 import com.ziqi.mlplatform.Model.TrainData;
 import com.ziqi.mlplatform.Repository.TrainDataRepository;
 import com.ziqi.mlplatform.dto.TrainDataResponse;
+import com.ziqi.mlplatform.dto.TrainDataWtoModelResponse;
 import com.ziqi.mlplatform.exception.OperationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,5 +199,12 @@ public class TrainDataService implements ITrainDataService {
     public TrainData getTemplateByName(String templateName) {
         return trainDataRepository.findByTemplateName(templateName)
                 .orElseThrow(() -> new OperationException("Model not found with model name: " + templateName));
+    }
+
+    @Override
+    public TrainData findByFilePath(String filePath) {
+        return trainDataRepository.findByFilePath(filePath)
+                .orElseThrow(() -> new OperationException("Train data not found with file path: " + filePath));
+
     }
 }

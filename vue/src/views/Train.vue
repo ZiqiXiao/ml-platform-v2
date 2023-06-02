@@ -4,7 +4,7 @@
     <div class="py-4 container-fluid">
       <div class="row">
         <div class="col-12">
-          <train-dataset-choose @putFilePath="getFilePath" @putLabel="getLabel"/>
+          <train-dataset-choose @putFilePath="getFilePath" @putLabel="getLabel" @put-existed-train-data="getExistedTrainData"/>
           <div class="card">
             <div class="card-header">
               <ul class="nav nav-tabs card-header-tabs">
@@ -58,7 +58,7 @@ export default {
       linearMission: "linear",
       binaryClassificationMission: "binary_classification",
       multipleClassificationMission: "multiple_classification",
-      usingExistedDataAndHasTemplate: false,
+      usingExistedTrainData: true,
     }
   },
 
@@ -79,21 +79,39 @@ export default {
   async created() {
     try {
       const response = await axios.get(serviceRoute["python-flask"] + "/model-params");
+      console.log(response.data)
       const algorithms = Object.entries(response.data).reduce((acc, [mission, algorithm]) => {
-        acc[mission] = Object.entries(algorithm).map(([algorithmName, algorithmParam]) => ({
-          algorithmName,
-          params: Object.entries(algorithmParam).map(([paramName, paramValue]) => ({
-            name: paramName,
-            value: paramValue,
-            type: typeof paramValue
-          })),
-          checked: false,
-        }));
+
+        acc[mission] = Object.entries(algorithm).map(([algorithmName, algorithmParam]) => {
+          return algorithmName === 'sl'
+              ? {
+                algorithmName,
+                params: Object.entries(algorithmParam).map(([learnerName, learnerParam]) => ({
+                  learnerName,
+                  params: Object.entries(learnerParam).map(([paramName, paramValue]) => ({
+                    name: paramName,
+                    value: paramValue,
+                    type: typeof paramValue
+                  })),
+                })),
+                checked: false,
+              }
+              : {
+                algorithmName,
+                params: Object.entries(algorithmParam).map(([paramName, paramValue]) => ({
+                  name: paramName,
+                  value: paramValue,
+                  type: typeof paramValue
+                })),
+                checked: false,
+              };
+        });
         return acc;
       }, {});
       this.linearAlgorithms = algorithms['linear']
       this.binaryClassificationAlgorithms = algorithms['binary_classification']
       this.multipleClassificationAlgorithms = algorithms['multiple_classification']
+      console.log(this.multipleClassificationAlgorithms)
     } catch (error) {
       console.error("Error fetching algorithm data:", error);
     }
@@ -118,6 +136,10 @@ export default {
       this.label = value;
     },
 
+    getExistedTrainData(value) {
+      this.usingExistedTrainData = value;
+    },
+
     async submitForm() {
       if (this.filePath && this.model) {
         try {
@@ -127,7 +149,8 @@ export default {
               model: JSON.stringify(this.model),
               filePath: this.filePath,
               label: this.label,
-              mission: this.currentTab
+              mission: this.currentTab,
+              usingExistedTrainData: this.usingExistedTrainData,
             },
             // query: { isFromTrain: true}
           });

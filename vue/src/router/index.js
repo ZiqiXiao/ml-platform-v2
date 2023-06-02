@@ -36,7 +36,7 @@ const routes = [
     meta: { roles: ["admin", 'train'] }
   },
   {
-    path: "/train-result/:model/:filePath/:label/:mission",
+    path: "/train-result/:model/:filePath/:label/:mission/:usingExistedTrainData",
     name: "Train Result",
     component: TrainResult,
     meta: { roles: ["admin", 'train'] }

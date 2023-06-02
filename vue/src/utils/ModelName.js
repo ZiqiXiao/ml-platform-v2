@@ -12,6 +12,7 @@ export default {
     "svc": "Support Vector Classification - 支持向量分类",
     "mlp": "Multi Layer Perceptron - 多层感知机",
     "rf": "Random Forest - 随机森林",
+    'sl': "Super Learner - 超级学习器",
   },
   "multiple_classification": {
     'lg': 'Logistic Regression - 逻辑回归',
@@ -19,6 +20,7 @@ export default {
     "mlp": "Multi Layer Perceptron - 多层感知机",
     "rf": "Random Forest - 随机森林",
     "svc": "Support Vector Classification - 支持向量分类",
+    'sl': "Super Learner - 超级学习器",
   },
 
 };

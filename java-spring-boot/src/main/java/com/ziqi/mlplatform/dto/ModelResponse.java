@@ -15,5 +15,6 @@ public class ModelResponse {
     private String modelName;
     private String modelPath;
     private String modelClass;
+    private String modelDescription;
     private TrainData uploadFile;
 }

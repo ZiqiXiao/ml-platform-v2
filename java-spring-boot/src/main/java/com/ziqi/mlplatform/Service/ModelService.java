@@ -3,7 +3,6 @@ package com.ziqi.mlplatform.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ziqi.mlplatform.Model.Model;
-import com.ziqi.mlplatform.Model.PredictData;
 import com.ziqi.mlplatform.Model.TrainData;
 import com.ziqi.mlplatform.Repository.ModelRepository;
 import com.ziqi.mlplatform.dto.ModelResponse;
@@ -12,17 +11,21 @@ import com.ziqi.mlplatform.exception.OperationException;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ModelService implements IModelService {
+    public static final Logger log = LoggerFactory.getLogger(ModelService.class);
     private final ModelRepository modelRepository;
     private final ITrainDataService trainDataService;
     @Autowired
@@ -49,11 +52,12 @@ public class ModelService implements IModelService {
     public Model createModel(SaveModelRequest saveModelRequest) {
         try {
             String flaskUrlSaveModel = "http://flask:5001/save-model";
-            System.out.println(saveModelRequest);
+            log.info("Create model with SaveModelRequest : {}", saveModelRequest);
             ResponseEntity<String> response = restTemplate.postForEntity(
                     flaskUrlSaveModel,
                     saveModelRequest,
                     String.class);
+
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 // Flask API调用成功，进行其他操作
@@ -62,20 +66,6 @@ public class ModelService implements IModelService {
 
                 String filePath = jsonNode.get("filePath").asText();
                 String templatePath = jsonNode.get("templatePath").asText();
-                System.out.println(filePath.length());
-                if (saveModelRequest.getTrainData().getFileName().length() == 0) {
-                    saveModelRequest.getTrainData().setFileName(null);
-                    saveModelRequest.getTrainData().setFilePath(null);
-                } else {
-                    saveModelRequest.getTrainData().setFilePath(filePath);
-                }
-
-                if (saveModelRequest.getTrainData().getTemplateName().length() == 0) {
-                    saveModelRequest.getTrainData().setTemplatePath(null);
-                    saveModelRequest.getTrainData().setTemplateName(null);
-                } else {
-                    saveModelRequest.getTrainData().setTemplatePath(templatePath);
-                }
 
                 JsonNode modelPathsNode = jsonNode.get("modelPaths");
                 List<String> modelPaths = new ArrayList<>();
@@ -83,41 +73,78 @@ public class ModelService implements IModelService {
                     modelPaths.add(pathNode.asText());
                 }
 
-                if (saveModelRequest.getTrainData().getFileName() != null | saveModelRequest.getTrainData().getTemplateName() != null) {
-                    TrainData trainData = trainDataService.createTrainData(saveModelRequest.getTrainData());
-                    System.out.println(trainData);
-
+                if (saveModelRequest.getExistedTrainDataPath().length() != 0) {
+                    log.info(saveModelRequest.getExistedTrainDataPath());
+                    TrainData trainData = trainDataService.findByFilePath(saveModelRequest.getExistedTrainDataPath());
+                    log.info("TrainData : {}", trainData);
                     for (int i=0; i<saveModelRequest.getModelName().size(); i++) {
 
                         Model model = Model.builder()
                                 .modelName(saveModelRequest.getModelName().get(i))
                                 .modelClass(saveModelRequest.getModelClass().get(i))
                                 .modelPath(modelPaths.get(i))
+                                .modelDescription(saveModelRequest.getModelDescription().get(i))
                                 .trainData(trainData)
                                 .build();
                         System.out.println(model);
                         modelRepository.save(model);
+                    }}
+                else {
+                    if (saveModelRequest.getTrainData().getFileName().length() == 0) {
+                        saveModelRequest.getTrainData().setFileName(null);
+                        saveModelRequest.getTrainData().setFilePath(null);
+                    } else {
+                        saveModelRequest.getTrainData().setFilePath(filePath);
                     }
-                } else {
-                    for (int i=0; i<saveModelRequest.getModelName().size(); i++) {
 
-                        Model model = Model.builder()
-                                .modelName(saveModelRequest.getModelName().get(i))
-                                .modelClass(saveModelRequest.getModelClass().get(i))
-                                .modelPath(modelPaths.get(i))
-                                .build();
-                        System.out.println(model);
-                        modelRepository.save(model);
+                    if (saveModelRequest.getTrainData().getTemplateName().length() == 0) {
+                        saveModelRequest.getTrainData().setTemplatePath(null);
+                        saveModelRequest.getTrainData().setTemplateName(null);
+                    } else {
+                        saveModelRequest.getTrainData().setTemplatePath(templatePath);
                     }
+
+                    if (saveModelRequest.getTrainData().getFileName() != null | saveModelRequest.getTrainData().getTemplateName() != null) {
+                        TrainData trainData = trainDataService.createTrainData(saveModelRequest.getTrainData());
+
+                        for (int i=0; i<saveModelRequest.getModelName().size(); i++) {
+
+                            Model model = Model.builder()
+                                    .modelName(saveModelRequest.getModelName().get(i))
+                                    .modelClass(saveModelRequest.getModelClass().get(i))
+                                    .modelPath(modelPaths.get(i))
+                                    .modelDescription(saveModelRequest.getModelDescription().get(i))
+                                    .trainData(trainData)
+                                    .build();
+                            System.out.println(model);
+                            modelRepository.save(model);
+                        }
+                    }
+                    else {
+                        for (int i=0; i<saveModelRequest.getModelName().size(); i++) {
+
+                            Model model = Model.builder()
+                                    .modelName(saveModelRequest.getModelName().get(i))
+                                    .modelClass(saveModelRequest.getModelClass().get(i))
+                                    .modelPath(modelPaths.get(i))
+                                    .modelDescription(saveModelRequest.getModelDescription().get(i))
+                                    .build();
+                            System.out.println(model);
+                            modelRepository.save(model);
+                        }
+                    }
+                    return null;
                 }
-                return null;
             } else {
                 // Flask API调用失败，处理错误
                 throw new OperationException("Flask API call failed with status code: " + response.getStatusCode());
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            log.error(e.getMessage());
             throw new OperationException(e.getMessage());
         }
+        return null;
     }
 
     public List<ModelResponse> getAllData(){
@@ -136,6 +163,7 @@ public class ModelService implements IModelService {
                 .modelName(model.getModelName())
                 .modelClass(model.getModelClass())
                 .modelPath(model.getModelPath())
+                .modelDescription(model.getModelDescription())
                 .uploadFile(model.getTrainData())
                 .build();
     }

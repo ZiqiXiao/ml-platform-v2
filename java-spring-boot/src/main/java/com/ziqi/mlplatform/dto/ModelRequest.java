@@ -13,4 +13,5 @@ public class ModelRequest {
     private String modelName;
     private String modelClass;
     private String modelPath;
+    private String modelDescription;
 }

@@ -1,9 +1,9 @@
 <template>
   <div class="card text-center" style="margin-bottom: 20px">
     <h5>选择数据集</h5>
-    <file-choose :scenario="scenario" @putFilePath="getFilePath" />
+    <file-choose :scenario="scenario" @put-file-path="getFilePath" @put-existed-train-data="getExistedTrainData" />
     <h5>确认预测目标</h5>
-    <label-check :filePath="filePath" @putLabel="getLabel"/>
+    <label-check :file-path="filePath" @putLabel="getLabel"/>
   </div>
 </template>
 
@@ -26,13 +26,14 @@ export default {
     },
   },
 
-emits: ['putFilePath'],
+emits: ['putFilePath', 'putLabel', 'putExistedTrainData'],
 
   data() {
     return {
       filePath: null,
       label: null,
       scenario: 'train-data',
+      existedTrainData: true,
     };
   },
 
@@ -49,6 +50,13 @@ emits: ['putFilePath'],
         this.$emit('putLabel', newValue);
       },
       immediate: true,
+    },
+
+    existedTrainData: {
+      handler(newValue) {
+        this.$emit('putExistedTrainData', newValue);
+      },
+      immediate: true,
     }
 
   },
@@ -63,6 +71,12 @@ emits: ['putFilePath'],
       this.label = value;
       // console.log("New label value:", value)
     },
+
+    getExistedTrainData(value) {
+      this.existedTrainData = value;
+      // console.log("New filePath value:", value)
+    },
+
   },
 }
 </script>

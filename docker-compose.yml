@@ -6,6 +6,7 @@ services:
     container_name: spring-boot
     volumes:
       - ./java-spring-boot:/app
+      - ./data/logs/spring-boot:/app/src/main/resources/log
     working_dir: /app
     command: "./mvnw spring-boot:run -Dspring-boot.run.profiles=dev"
     ports:
@@ -78,6 +79,7 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_LOG_LEVEL: DEBUG
+      KEYCLOAK_DEFAULT_LANGUAGE: zh
       TZ: Asia/Shanghai
     ports:
       - "8081:8080"

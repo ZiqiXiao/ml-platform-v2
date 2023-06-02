@@ -9,4 +9,6 @@ public interface TrainDataRepository extends JpaRepository<TrainData, Long> {
     Optional<TrainData> findByFileName(String fileName);
 
     Optional<TrainData> findByTemplateName(String templateName);
+
+    Optional<TrainData> findByFilePath(String filePath);
 }

@@ -46,11 +46,11 @@ def init_train_routes(app, socketio):
         # app.logger.info(f"Model Dict Is {model_dict}")
         model_names = request.get_json()['modelName']
         model_classes = request.get_json()['modelClass']
-        app.logger.info(f"{str(model_classes)}")
+        # app.logger.info(f"{str(model_classes)}")
         train_data = request.get_json()['trainData']
         file_name = train_data['fileName']
         template_name = train_data['templateName']
-        app.logger.info(f"{str(model_dict)}")
+        # app.logger.info(f"{str(model_dict)}")
 
         model_save_path_list = []
         # 保存模型

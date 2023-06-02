@@ -75,7 +75,6 @@ def cal_feature_importance(model):
 
 
 def cal_metrics(y_true, y_pred, y_pred_proba, type='train'):
-    print(y_pred_proba)
     acc = accuracy_score(y_true, y_pred)
 
     mse = mean_squared_error(y_true, y_pred)

@@ -2,10 +2,7 @@ package com.ziqi.mlplatform.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -29,5 +26,6 @@ public class TrainData {
     @JoinColumn(name = "upload_file_id", referencedColumnName = "id")
     @JsonIgnore
     @OnDelete(action = OnDeleteAction.NO_ACTION)
+    @ToString.Exclude
     private List<Model> models;
 }

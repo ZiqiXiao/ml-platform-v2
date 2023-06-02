@@ -87,7 +87,7 @@ export default {
     },
   },
 
-  emits: ['putFilePath'],
+  emits: ['putFilePath', 'putExistedTrainData'],
 
   data() {
     return {
@@ -125,7 +125,19 @@ export default {
         this.$emit('putFilePath', newValue);
       },
       immediate: true,
-    }
+    },
+
+    currentTab: {
+      handler(newValue) {
+        if (newValue === "select") {
+          this.$emit('putExistedTrainData', true);
+        } else {
+          this.$emit('putExistedTrainData', false);
+        }
+
+      },
+      immediate: true,
+    },
 
   },
   mounted() {

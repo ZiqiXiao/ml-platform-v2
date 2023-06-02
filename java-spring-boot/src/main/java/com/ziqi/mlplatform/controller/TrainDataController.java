@@ -78,4 +78,10 @@ public class TrainDataController {
         return ResponseEntity.ok(trainData);
     }
 
+    @PostMapping("/find-file-by-path")
+    public ResponseEntity<TrainData> findFileByPath(@RequestBody String filePath) {
+        TrainData trainData = trainDataService.findByFilePath(filePath);
+        return ResponseEntity.ok(trainData);
+    }
+
 }

@@ -53,6 +53,22 @@ export default {
       "n_estimators": "n_estimators - 决策树数量",
       "max_depth": "max_depth - 最大树深",
     },
+
+    "sl": {
+      "rf": {
+        "random_state": "random_state - 随机种子",
+        "n_estimators": "n_estimators - 决策树数量",
+        "max_depth": "max_depth - 最大树深",
+      },
+      "svc": {
+        "kernel": "kernel - 核函数类型",
+        "gamma": "gamma - 核函数系数",
+        "C": "C - 惩罚系数",
+      },
+      "lg": {
+        "max_iter": "max_iter - 最大迭代次数",
+      },
+    }
   },
 
   "multiple_classification": {
@@ -83,5 +99,21 @@ export default {
       "n_estimators": "n_estimators - 决策树数量",
       "max_depth": "max_depth - 最大树深",
     },
+
+    "sl": {
+      "rf": {
+        "random_state": "random_state - 随机种子",
+        "n_estimators": "n_estimators - 决策树数量",
+        "max_depth": "max_depth - 最大树深",
+      },
+      "svc": {
+        "kernel": "kernel - 核函数类型",
+        "gamma": "gamma - 核函数系数",
+        "C": "C - 惩罚系数",
+      },
+      "lg": {
+        "max_iter": "max_iter - 最大迭代次数",
+      },
+    }
   },
 }

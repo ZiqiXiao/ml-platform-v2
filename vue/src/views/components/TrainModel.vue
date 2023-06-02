@@ -5,10 +5,21 @@
         <input :id="algorithm.algorithmName" v-model="algorithm.checked" type="checkbox" />
         <label :for="algorithm.algorithmName" class="model-name">{{ modelName[mission][algorithm.algorithmName] }}</label>
       </div>
-      <div v-if="algorithm.checked && algorithm.params.length > 0" class="card-body">
+      <div v-if="algorithm.checked && algorithm.params.length > 0 && algorithm.algorithmName !== 'sl'" class="card-body">
         <div v-for="(param, paramIndex) in algorithm.params" :key="paramIndex" class="input-container">
           <label class="param-name">{{ paramName[mission][algorithm.algorithmName][param.name] }}</label>
           <input v-model="param.value" :type="param.type" />
+        </div>
+      </div>
+      <div v-else-if="algorithm.checked && algorithm.params.length > 0 && algorithm.algorithmName === 'sl'" class="card-body">
+        <div v-for="(learner, learnerIndex) in algorithm.params" :key="learnerIndex" class="input-container" style="display: block">
+          <label class="param-name-mul">{{ modelName[mission][learner.learnerName] }}</label>
+          <div style="display: block; margin-left: 100px">
+            <div v-for="(param, paramIndex) in learner.params" :key="paramIndex" class="input-container">
+                <label class="param-name-sub">{{ paramName[mission][algorithm.algorithmName][learner.learnerName][param.name] }}</label>
+                <input v-model="param.value" :type="param.type" style="width: 100px; height: 20px; margin-left: 5px;"/>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -104,5 +115,20 @@ export default {
 
 .param-name {
   font-size: 15px;
+}
+
+.param-name-mul {
+  display: block;
+  font-size: 15px;
+  margin-left: 10px;
+  margin-right: 30px;
+  width: 500px;
+}
+
+.param-name-sub {
+  display: block;
+  font-size: 13px;
+  margin-left: 100px;
+  width: 200px;
 }
 </style>

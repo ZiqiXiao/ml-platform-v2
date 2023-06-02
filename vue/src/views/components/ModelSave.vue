@@ -1,32 +1,36 @@
 <template>
-  <div class="form-check">
-    <input id="saveDatasetCheckbox" v-model="saveDataset" class="form-check-input" type="checkbox">
-    <label class="form-check-label" for="saveDatasetCheckbox">保存数据集到本地</label>
-  </div>
-  <div v-if="saveDataset" class="input-group mb-3">
-    <input v-model="datasetSaveName" type="text" class="form-control" placeholder="数据集保存名称">
-  </div>
-  <div class="d-flex align-items-center">
-    <button class="btn btn-behance" type="button" style="margin-right: 20px" @click="checkDatasetName">检查</button>
-    <div v-show="saveDataset">
-      <i v-if="datasetSaveName === ''" class="fas fa-times">：请输入名字并检查</i>
-      <i v-else-if="validDatasetSaveName && datasetSaveName !== ''" class="fas fa-check">：可以使用该名字</i>
+  <div v-if="existedTrainDataPath.length===0">
+    <div class="form-check">
+      <input id="saveDatasetCheckbox" v-model="saveDataset" class="form-check-input" type="checkbox">
+      <label class="form-check-label" for="saveDatasetCheckbox">保存数据集到本地</label>
+    </div>
+    <div v-if="saveDataset" class="input-group mb-3">
+      <input v-model="datasetSaveName" type="text" class="form-control" placeholder="数据集保存名称">
+    </div>
+    <div class="d-flex align-items-center">
+      <button class="btn btn-behance" type="button" style="margin-right: 20px" @click="checkDatasetName">检查</button>
+      <div v-show="saveDataset">
+        <i v-if="datasetSaveName === ''" class="fas fa-times">：请输入名字并检查</i>
+        <i v-else-if="validDatasetSaveName && datasetSaveName !== ''" class="fas fa-check">：可以使用该名字</i>
+      </div>
+    </div>
+    <div class="form-check">
+      <input id="saveTemplateCheckbox" v-model="saveTemplate" class="form-check-input" type="checkbox">
+      <label class="form-check-label" for="saveTemplateCheckbox">保存数据集模板</label>
+    </div>
+    <div v-if="saveTemplate" class="input-group mb-3">
+      <input v-model="templateSaveName" type="text" class="form-control" placeholder="数据集模板保存名称">
+    </div>
+    <div class="d-flex align-items-center">
+      <button class="btn btn-behance" type="button" style="margin-right: 20px" @click="checkTemplateName">检查</button>
+      <div v-show="saveTemplate">
+        <i v-if="templateSaveName === ''" class="fas fa-times">：请输入名字并检查</i>
+        <i v-else-if="validTemplateSaveName && templateSaveName !== ''" class="fas fa-check">：可以使用该名字</i>
+      </div>
     </div>
   </div>
-
-  <div class="form-check">
-    <input id="saveTemplateCheckbox" v-model="saveTemplate" class="form-check-input" type="checkbox">
-    <label class="form-check-label" for="saveTemplateCheckbox">保存数据集模板</label>
-  </div>
-  <div v-if="saveTemplate" class="input-group mb-3">
-    <input v-model="templateSaveName" type="text" class="form-control" placeholder="数据集模板保存名称">
-  </div>
-  <div class="d-flex align-items-center">
-    <button class="btn btn-behance" type="button" style="margin-right: 20px" @click="checkTemplateName">检查</button>
-    <div v-show="saveTemplate">
-      <i v-if="templateSaveName === ''" class="fas fa-times">：请输入名字并检查</i>
-      <i v-else-if="validTemplateSaveName && templateSaveName !== ''" class="fas fa-check">：可以使用该名字</i>
-    </div>
+  <div v-else class="d-flex align-items-center">
+    <h6>使用已有数据集保存的模型将直接关联</h6>
   </div>
   <div>
     <table class="table align-items-center mb-0">
@@ -37,6 +41,7 @@
         <th scope="col">模型名称</th>
         <th scope="col">检查名称</th>
         <th scope="col">检查结果</th>
+        <th scope="col">模型描述</th>
       </tr>
       </thead>
       <tbody>
@@ -49,6 +54,7 @@
           <i v-if="checkboxStatus[index] && nameCheckStatus[index] === 'valid'" class="fas fa-check">：可以使用该名字</i>
           <i v-else-if="checkboxStatus[index] && nameCheckStatus[index] === 'invalid'" class="fas fa-times">：名字已存在</i>
         </td>
+        <td><input v-show="checkboxStatus[index]" v-model="modelDescription[index]" type="text" placeholder="请输入模型的重要相关信息"/></td>
       </tr>
       </tbody>
     </table>
@@ -74,13 +80,18 @@ export default {
     mission: {
       type: String,
       default: () => {},
-    }
+    },
+    existedTrainDataPath: {
+      type: String,
+      default: '',
+    },
   },
 
   data() {
     return {
       modelName: ModelName,
       modelSaveName: [],
+      modelDescription: [],
       checkboxStatus: [],
       nameCheckStatus: [],
       saveDataset: false,
@@ -152,6 +163,7 @@ export default {
         const algoName = Object.keys(modelObj)[0];
         const originalIndex = this.metricsSum.findIndex(obj => Object.keys(obj)[0] === algoName);
         const saveName = this.modelSaveName[originalIndex];
+        const modelDescription = this.modelDescription[originalIndex];
 
         if (!acc.modelClass) {
           acc.modelClass = [];
@@ -159,9 +171,13 @@ export default {
         if (!acc.modelName) {
           acc.modelName = [];
         }
+        if (!acc.modelDescription) {
+          acc.modelDescription = [];
+        }
 
         acc.modelClass.push(algoName);
         acc.modelName.push(saveName);
+        acc.modelDescription.push(modelDescription);
 
         return acc;
       }, {});
@@ -170,19 +186,21 @@ export default {
       await this.saveModelAndName(
         algoNameAndSaveName.modelClass,
         algoNameAndSaveName.modelName,
+        algoNameAndSaveName.modelDescription,
         this.datasetSaveName,
         this.templateSaveName);
     },
 
-    async saveModelAndName(algoName, modelSaveName, uploadFileName, templateName) {
+    async saveModelAndName(algoName, modelSaveName, modelDescription, uploadFileName, templateName) {
       try {
         const res = {
           modelClass: algoName,
           modelName: modelSaveName,
+          modelDescription: modelDescription,
           trainData: {
             fileName: uploadFileName,
-            templateName: templateName,
-        }
+            templateName: templateName,},
+          existedTrainDataPath: this.existedTrainDataPath,
         };
         await axios.post(ServiceRoute['java-springboot']['model'] + '/create', res, {
           headers: {
