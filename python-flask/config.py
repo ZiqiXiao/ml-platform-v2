@@ -76,7 +76,7 @@ class Config:
             'svr': 'app.models.linear.svr',
             'lr': 'app.models.linear.lr',
             'rf': 'app.models.linear.rf',
-            'sl': 'app.models.linear.sl',},
+            'sl': 'app.models.linear.sl', },
 
         'binary_classification': {
             'lg': 'app.models.binary_classification.lg',
@@ -116,7 +116,7 @@ class Config:
                    'random_state': 42},
 
             'sl': {'lr': {},
-                   'svc': {},
+                   'svr': {},
                    'rf': {'n_estimators': 100,
                           'max_depth': 4,
                           'random_state': 42},
@@ -195,6 +195,8 @@ class Config:
             'lr': {},
 
             'rf': {},
+
+            'sl': {},
         },
 
         'binary_classification': {

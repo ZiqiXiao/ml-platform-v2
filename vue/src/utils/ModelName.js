@@ -5,6 +5,7 @@ export default {
     "svr": "Support Vector Regression - 支持向量回归",
     "rf": "Random Forest - 随机森林",
     "xgboost": "XGBoost - 极端梯度提升",
+    'sl': "Super Learner - 超级学习器",
   },
   "binary_classification": {
     "lg": "Logistic Regression - 逻辑回归",

@@ -141,7 +141,7 @@ export default {
     },
 
     async submitForm() {
-      if (this.filePath && this.model) {
+      if (this.filePath && this.model && this.label) {
         try {
           await router.push({
             name: 'Train Result',
@@ -161,6 +161,8 @@ export default {
         alert("请选择或上传数据！");
       } else if (this.model === null) {
         alert("请选择模型并点击确认参数！");
+      } else if (this.label === null) {
+        alert("请选择标签！");
       }
 
     }

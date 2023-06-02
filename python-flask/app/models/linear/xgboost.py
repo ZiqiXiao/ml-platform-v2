@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, mean_squared_error
 import os
 import joblib
 import pandas as pd
-from app.models.linear.utils import cal_metrics, load_dataset, data_preprocess
+from app.models.linear.utils import cal_metrics, load_dataset, data_preprocess, cal_feature_importance
 import numpy as np
 from config import Config
 
@@ -96,6 +96,7 @@ class Model:
             self.model.predict(dvalid)), type='valid')
 
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
+        self.metric_data.update({'featureImportance': cal_feature_importance(self.model)})
         self.socketio.emit('eval-message', self.metric_data)
 
         # print('training successfully')

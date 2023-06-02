@@ -1,6 +1,9 @@
+from mlens.ensemble import SuperLearner
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import log_loss, accuracy_score
 from app.models.linear.utils import cal_metrics, data_preprocess, load_dataset, cal_feature_importance
 import os
 import joblib
@@ -11,25 +14,23 @@ from config import Config
 
 class Model:
     """
-    SVR模型
+    Logistic Regression模型
     """
 
     def __init__(self, model=None, app=None, socketio=None):
         self.model = model
         self.app = app
         self.socketio = socketio
-        self.default_params = Config.DEFAULT_PARAMS['linear']['svr'].copy()
-        self.default_params.update(Config.DEFAULT_PARAMS_UNDER['linear']['svr'])
+        self.default_params = Config.DEFAULT_PARAMS['linear']['sl'].copy(
+        )
+        self.default_params.update(
+            Config.DEFAULT_PARAMS_UNDER['linear']['sl'])
         self.metric_data = {
-            'modelName': 'svr',
+            'modelName': 'sl',
             'epoch': [],
             'trainLoss': [],
             'validLoss': [],
         }
-
-    def log_message(self, message):
-        if self.socketio is not None:
-            self.socketio.emit('training_log', {'message': message})
 
     def train(self, dataset_path, label, custom_params={}):
         # 加载数据集
@@ -40,7 +41,6 @@ class Model:
         self.default_params.update(custom_params)
         train_size = self.default_params.get(
             'train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
-        # self.default_params.pop('train_size')
         print(train_size)
 
         # 对数据集进行预处理，例如划分训练集和验证集
@@ -49,24 +49,36 @@ class Model:
         self.app.logger.info('dataset split')
 
         # 训练模型
-        self.app.logger.info('training model svr ... ')
-        self.model = SVR(**self.default_params)
+        # self.app.logger.info('training model logreg ... ')
+        # self.model = LogisticRegression(**self.default_params)
+        seed = 2017
+
+        rf_param = self.default_params['rf']
+        svr_param = self.default_params['svr']
+        lr_param = self.default_params['lr']
+
+        self.model = SuperLearner(random_state=seed)
+        # Build the first layer
+        self.model.add([RandomForestRegressor(**rf_param), SVR(**svr_param)])
+        # Attach the final meta estimator
+        self.model.add_meta(LinearRegression(**lr_param))
+
         self.model.fit(train_X, train_y)
 
         train_metrics = cal_metrics(
-            train_y, self.model.predict(train_X), type='train')
+            train_y,
+            self.model.predict(train_X),
+            type='train')
         valid_metrics = cal_metrics(
-            valid_y, self.model.predict(valid_X), type='valid')
+            valid_y,
+            self.model.predict(valid_X),
+            type='valid')
 
-        self.socketio.emit('train-message',
-                           {'modelName': 'svr',
-                            'progress': 100,
-                            })
-
+        self.socketio.emit('train-message', {'modelName': 'sl', 'progress': 100})
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
-        self.metric_data.update({'featureImportance': cal_feature_importance(self.model)})
+        # self.metric_data.update({'featureImportance': cal_feature_importance(self.model)})
+        self.app.logger.info(train_metrics)
         self.socketio.emit('eval-message', self.metric_data)
-
         self.app.logger.info('training successfully')
         return self.model
 

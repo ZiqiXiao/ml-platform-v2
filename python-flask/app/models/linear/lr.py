@@ -1,7 +1,7 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-from app.models.linear.utils import cal_metrics, data_preprocess, load_dataset
+from app.models.linear.utils import cal_metrics, data_preprocess, load_dataset, cal_feature_importance
 import os
 import joblib
 import pandas as pd
@@ -60,6 +60,7 @@ class Model:
         self.socketio.emit(
             'train-message', {'modelName': 'lr', 'progress': 100})
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
+        self.metric_data.update({'featureImportance': cal_feature_importance(self.model)})
         self.socketio.emit('eval-message', self.metric_data)
         self.app.logger.info('training successfully')
         return self.model
