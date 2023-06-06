@@ -97,8 +97,13 @@ class Model:
                 "Model not trained yet. Train the model before making predictions.")
         self.app.logger.info('predicting ... ')
         data = load_dataset(dataset_path)
-        predicted = self.model.predict(data)
-        return predicted
+        if data.shape[0] == 1:
+            data = pd.concat([data, data], axis=0)
+            predicted = self.model.predict(data)
+            return np.array(predicted.argmax(axis=1)[0], ndmin=2)
+        else:
+            predicted = self.model.predict(data)
+            return predicted.argmax(axis=1)
 
     def save_model(self, model_path):
         if self.model is None:

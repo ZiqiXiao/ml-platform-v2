@@ -4,10 +4,6 @@
     <div class="py-4 container-fluid">
       <div class="row">
         <div class="col-12">
-          <h4>训练数据集</h4>
-          <dataset-table :scenario="trainDataScenario"/>
-        </div>
-        <div class="col-12">
           <h4>预测数据集</h4>
           <dataset-table :scenario="predictDataScenario"/>
         </div>
@@ -21,7 +17,7 @@ import DatasetTable from "@/views/components/DatasetTable.vue";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
-  name: "Dataset",
+  name: "PredictDataset",
   components: {
     DatasetTable,
   },

@@ -6,8 +6,9 @@ import TrainModel from "@/views/Train.vue";
 import TrainResult from "@/views/TrainResult.vue";
 import Predict from "@/views/Predict.vue";
 import PredictResult from "@/views/PredictResult.vue";
-import Dataset from "@/views/Dataset.vue";
+import TrainDataset from "@/views/TrainDataset.vue";
 import store from "@/store";
+import PredictDataset from "@/views/PredictDataset.vue";
 
 const routes = [
   {
@@ -15,7 +16,7 @@ const routes = [
     name: "Models",
     component: ModelsPage,
     // meta: { requiresAuth: true }
-    meta: { roles: ["admin", 'predict', 'train'] }
+    meta: { roles: ["admin"] }
   },
   {
     path: "/sign-in",
@@ -54,9 +55,15 @@ const routes = [
     meta: { roles: ["admin", 'predict'] }
   },
   {
-    path: "/dataset",
-    name: "Dataset",
-    component: Dataset,
+    path: "/TrainDataset",
+    name: "TrainDataset",
+    component: TrainDataset,
+    meta: { roles: ["admin"] }
+  },
+  {
+    path: "/PredictDataset",
+    name: "PredictDataset",
+    component: PredictDataset,
     meta: { roles: ["admin"] }
   },
   {

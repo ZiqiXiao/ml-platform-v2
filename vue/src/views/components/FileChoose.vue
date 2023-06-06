@@ -286,7 +286,7 @@ export default {
       // 检查rowData的数据是否完整
       for (const column of this.rowData) {
         for (const header of this.columnHeaders) {
-          if (!column[header]) {
+          if (isNaN(column[header])) {
             alert("请填写完整数据！");
             return;
           } else if (typeof column[header] !== "number") {

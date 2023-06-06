@@ -33,7 +33,14 @@
         </sidenav-collapse>
       </li>
       <li class="nav-item">
-        <sidenav-collapse :nav-text="pageName['Dataset']" :to="{ name: 'Dataset' }">
+        <sidenav-collapse :nav-text="pageName['TrainDataset']" :to="{ name: 'TrainDataset' }">
+          <template #icon>
+            <icon name="tables" />
+          </template>
+        </sidenav-collapse>
+      </li>
+      <li class="nav-item">
+        <sidenav-collapse :nav-text="pageName['PredictDataset']" :to="{ name: 'PredictDataset' }">
           <template #icon>
             <icon name="tables" />
           </template>

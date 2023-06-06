@@ -1,8 +1,8 @@
 <template>
   <div class="fixed-plugin">
-    <a class="px-3 py-2 fixed-plugin-button text-dark position-fixed" @click="toggle">
-      <i class="py-2 fa fa-cog"></i>
-    </a>
+<!--    <a class="px-3 py-2 fixed-plugin-button text-dark position-fixed" @click="toggle">-->
+<!--      <i class="py-2 fa fa-cog"></i>-->
+<!--    </a>-->
     <div class="shadow-lg card blur">
       <div class="pt-3 pb-0 bg-transparent card-header">
         <div class="float-start">

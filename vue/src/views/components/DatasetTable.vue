@@ -1,11 +1,11 @@
 <template>
   <div class="card mb-4">
     <div class="card-body px-0 pt-0 pb-2">
-      <div class="table-responsive p-0 overflow-auto" style="height: 500px;">
+      <input v-model="search" type="text" class="form-control mb-3" placeholder="搜索模型" />
+      <div class="table-responsive p-0 overflow-auto" style="max-height: 500px; overflow-y: auto;">
         <table class="table align-items-center mb-0">
           <thead>
           <tr>
-            <th class="text-uppercase text-secondary text-s font-weight-bolder opacity-7">编号</th>
             <th
               class="text-uppercase text-secondary text-s font-weight-bolder opacity-7 ps-2"
             >名称</th>
@@ -15,14 +15,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(item, index) in tableData"  :key="index">
-            <td v-if="item.fileName">
-              <div class="d-flex px-2 py-1">
-                <div class="d-flex flex-column justify-content-center">
-                  <h6 class="mb-0 text-sm">{{ item.id }}</h6>
-                </div>
-              </div>
-            </td >
+          <tr v-for="(item, index) in sortedFilteredModels"  :key="index">
             <td v-if="item.fileName">
               <p class="text-xs font-weight-bold mb-0">{{ item.fileName }}</p>
             </td>
@@ -56,7 +49,28 @@ export default {
   data() {
     return {
       tableData: [],
+      search: '',
     }
+  },
+
+  computed: {
+    sortedFilteredModels() {
+      return this.filteredModels.slice().sort((a, b) => {
+        const aValue = a.fileName;
+        const bValue = b.fileName;
+        return aValue.localeCompare(bValue);
+      });
+    },
+
+    filteredModels() {
+      return this.tableData.filter((model) => {
+        // const isModelNameMatch = model.modelName && model.modelName.toLowerCase().includes(this.search.toLowerCase());
+        // const isMissionMatch = this.selectedMission ? model.mission === this.selectedMission : true;
+        // const isModelClassMatch = this.selectedModelClass ? model.modelClass === this.selectedModelClass : true;
+
+        return model.fileName && model.fileName.toLowerCase().includes(this.search.toLowerCase());
+      });
+    },
   },
 
   mounted() {
