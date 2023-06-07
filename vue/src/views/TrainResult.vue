@@ -7,12 +7,13 @@
         <progress :value="chart.progress" :max="100" show-progress></progress>
       </div>
       <div class="card-body">
-        <LossChart v-if="chart.hasLossChart" :chart-name="chart.name" :chart-data="chart.chartData" />
+        <LossChart v-if="chart.hasLossChart" :chart-name="chart.name" :chart-data="chart.chartData"/>
         <result-graph v-if="chart.confusionMatrix" :graph-info="chart.confusionMatrix" :title="confusionMatrixTitle"/>
-        <result-graph v-if="chart.rocCurve" :title="rocCurveTitle" :graph-info="chart.rocCurve" />
-        <result-graph v-if="chart.featureImportance" :title="featureImportanceTitle" :graph-info="chart.featureImportance" />
+        <result-graph v-if="chart.rocCurve" :title="rocCurveTitle" :graph-info="chart.rocCurve"/>
+        <result-graph v-if="chart.featureImportance" :title="featureImportanceTitle"
+                      :graph-info="chart.featureImportance"/>
         <div class="scrollable-table">
-          <MetricTable v-if="chart.chartData" :table-data="chart.chartData.metrics" :mission="mission" />
+          <MetricTable v-if="chart.chartData" :table-data="chart.chartData.metrics" :mission="mission"/>
         </div>
       </div>
     </div>
@@ -21,7 +22,7 @@
         <h3>总体结果</h3>
       </div>
       <div class="card-body scrollable-table">
-        <metric-table-sum v-if="metricsSum.length" :metrics-sum="metricsSum" :mission="mission" />
+        <metric-table-sum v-if="metricsSum.length" :metrics-sum="metricsSum" :mission="mission"/>
       </div>
     </div>
     <div class="card">
@@ -64,7 +65,7 @@ export default {
     return {
       filePath: null,
       model: null,
-      label:null,
+      label: null,
       mission: null,
       charts: [],
       modelName: ModelName,
@@ -86,14 +87,14 @@ export default {
     }
     Object.entries(this.model).forEach(([key,]) => {
       this.charts.push({
-        name: key,
-        progress: 0,
-        hasLossChart: false,
-        chartData: null,
-        confusionMatrix: null,
-        rocCurve: null,
-        featureImportance: null,
-        },
+            name: key,
+            progress: 0,
+            hasLossChart: false,
+            chartData: null,
+            confusionMatrix: null,
+            rocCurve: null,
+            featureImportance: null,
+          },
       );
     });
   },
@@ -126,6 +127,12 @@ export default {
           chart.progress = nonReactiveData.progress;
         }
       });
+
+      // this.socket.on("training-failed", (response) => {
+      //   console.log("Training failed:", response);
+      //   alert("训练失败，请检查数据集是否正确!");
+      //   this.$router.push({name: "Train"});
+      // });
 
       this.socket.on("eval-message", (response) => {
         const nonReactiveData = JSON.parse(JSON.stringify(response));
@@ -191,9 +198,10 @@ export default {
         if (nonReactiveData.featureImportance) {
           chart.featureImportance = [{
             dataset: "",
-            imgUrl: nonReactiveData.featureImportance}]
+            imgUrl: nonReactiveData.featureImportance
+          }]
         }
-        console.log(this.charts);
+        // console.log(this.charts);
         this.updateMetricsSum(nonReactiveData.modelName, nonReactiveData.metrics);
       });
     },
@@ -207,12 +215,17 @@ export default {
           mission: this.mission
         };
         try {
-          console.log("Sending train request:", requestData);
-          await axios.post(
-            ServiceRoute["python-flask"] + "/start-train",
-            requestData,
-            { headers: { "Content-Type": "application/json" } }
+          // console.log("Sending train request:", requestData);
+          const response = await axios.post(
+              ServiceRoute["python-flask"] + "/start-train",
+              requestData,
+              {headers: {"Content-Type": "application/json"}}
           );
+          console.log(response)
+          if (response.data.status === 500) {
+            alert("训练失败，请检查数据集是否正确!");
+            this.$router.push({name: "Train"});
+          }
         } catch (error) {
           console.error("Error:", error);
         }
@@ -224,8 +237,8 @@ export default {
     },
     updateMetricsSum(modelName, metrics) {
       this.metricsSum.push({
-        [modelName]: metrics
-        }
+            [modelName]: metrics
+          }
       )
     }
   },

@@ -54,7 +54,15 @@ export default {
     },
 
     async submitForm() {
+      if (this.modelPath === null) {
+        alert("请选择模型并点击确认！");
+      }
+      if (this.filePath === '') {
+        alert("请选择或上传数据！");
+      }
       if (this.filePath && this.modelPath) {
+        console.log("filePath:", this.filePath);
+        console.log("modelPath:", this.modelPath);
         try {
           await router.push({
             name: 'Predict Result',
@@ -67,10 +75,6 @@ export default {
         } catch (error) {
           console.error("Error:", error);
         }
-      } else if (this.filePath === null) {
-        alert("请选择或上传数据！");
-      } else if (this.model === null) {
-        alert("请选择模型并点击确认！");
       }
     }
   },
