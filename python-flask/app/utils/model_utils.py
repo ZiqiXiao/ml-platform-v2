@@ -1,11 +1,16 @@
+import http
 import os
 from datetime import datetime
 
 import pandas as pd
 import importlib
+
+from flask import jsonify
+
 from config import Config
 import time
 import traceback
+
 
 # pending_event = []
 
@@ -35,13 +40,6 @@ def train_scheduler(
         _type_: _description_
     """
     try:
-        # 将表中的表头读取下来作为模板，用于后续的预测。不包含label
-        # header = pd.read_csv(os.path.join(Config.UPLOAD_TRAIN_FOLDER, filename), nrows=0).drop(label, axis=1)
-        # model_dict['template'] = header
-        # 训练模型
-        # 测试链接
-        # socketio.emit('connect')
-
         for m, p in model.items():
 
             for idx, val in p.items():
@@ -53,9 +51,7 @@ def train_scheduler(
         # socketio.emit('training-finished')
         return model_dict
     except Exception as e:
-        app.logger.error(f"Training Error: {str(e)}\n{traceback.format_exc()}")
-        # socketio.emit('training_log', {'message': f'Error: {str(e)}\n{traceback.format_exc()}',
-        #                                'type': 'error'})
+        raise
 
 
 def training(app, filename, mission, model_class, label='label', param=None, socketio=None):
@@ -99,6 +95,7 @@ def predict(app, file_path, model_path, socketio=None):
 
     app.logger.info(f"Predict Success")
 
+    app.logger.info(result)
     result = pd.DataFrame(result, columns=['prediction'])
     # Save the result to the server
     save_filename = f'{datetime.now().strftime("%Y%m%d%H%M%S")}-{file_path.split(os.sep)[-1]}.csv'

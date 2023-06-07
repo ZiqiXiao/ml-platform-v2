@@ -62,6 +62,8 @@ export default {
 
   },
 
+  emits: ['putModelPath'],
+
   data() {
     return {
       models: [], // 从后端获取的模型列表

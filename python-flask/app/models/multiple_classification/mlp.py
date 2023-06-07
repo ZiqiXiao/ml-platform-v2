@@ -197,9 +197,9 @@ class Model:
             for inputs, targets in train_dataloader:
                 outputs = torch.nn.functional.softmax(best_model(inputs), dim=1)
                 _, predicted = torch.max(outputs.data, 1)
-                y_true = np.append(y_true, targets.numpy().flatten())
-                y_pred = np.append(y_pred, predicted.numpy().flatten())
-                y_pred_praba.append(outputs)
+                y_true = np.append(y_true, targets.tolist())
+                y_pred = np.append(y_pred, predicted.tolist())
+                y_pred_praba.append(outputs.tolist())
             y_pred_praba = np.concatenate(y_pred_praba, axis=0)
             best_train_metrics = cal_metrics(y_true, y_pred, y_pred_praba, type='train')
 
@@ -210,9 +210,9 @@ class Model:
             for inputs, targets in valid_dataloader:
                 outputs = torch.nn.functional.softmax(best_model(inputs), dim=1)
                 _, predicted = torch.max(outputs.data, 1)
-                y_true = np.append(y_true, targets.numpy().flatten())
-                y_pred = np.append(y_pred, predicted.numpy().flatten())
-                y_pred_praba.append(outputs)
+                y_true = np.append(y_true, targets.tolist())
+                y_pred = np.append(y_pred, predicted.tolist())
+                y_pred_praba.append(outputs.tolist())
             y_pred_praba = np.concatenate(y_pred_praba, axis=0)
             best_valid_metrics = cal_metrics(y_true, y_pred, y_pred_praba, type='valid')
 
@@ -239,5 +239,5 @@ class Model:
         self.model.eval()
         with torch.no_grad():
             outputs = self.model(data)
-            # _, predicted = torch.max(outputs.data, 1)
-            return outputs
+            _, predicted = torch.max(outputs.data, 1)
+            return predicted.tolist()

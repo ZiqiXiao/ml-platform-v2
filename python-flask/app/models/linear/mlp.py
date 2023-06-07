@@ -137,8 +137,8 @@ class Model:
             with torch.no_grad():
                 for eval_inputs, eval_targets in dataloader:
                     eval_outputs = model(eval_inputs)
-                    y_true = np.append(y_true, eval_targets.numpy().flatten())
-                    y_pred = np.append(y_pred, eval_outputs.numpy().flatten())
+                    y_true = np.append(y_true, eval_targets.tolist())
+                    y_pred = np.append(y_pred, eval_outputs.tolist())
                     eval_loss = criterion(eval_outputs, eval_targets)
 
             metrics = cal_metrics(y_true, y_pred, type=type)

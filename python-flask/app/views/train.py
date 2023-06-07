@@ -1,7 +1,9 @@
 import http
 import shutil
+from concurrent.futures import ThreadPoolExecutor
 
 import joblib
+import torch
 
 from .utils import *
 
@@ -26,20 +28,29 @@ def init_train_routes(app, socketio):
 
     @app.route('/start-train', methods=['Post'])
     def start_train():
-        global model_dict
-        model_dict = {}
-        # 解析数据
-        filepath = request.get_json()['filePath']
-        models = request.get_json()['model']
-        label = request.get_json()['label']
-        mission = request.get_json()['mission']
+        try:
+            global model_dict
+            model_dict = {}
+            # 解析数据
+            filepath = request.get_json()['filePath']
+            models = request.get_json()['model']
+            label = request.get_json()['label']
+            mission = request.get_json()['mission']
 
-        model_dict['filepath'] = filepath
-        model_dict['mission'] = mission
+            model_dict['filepath'] = filepath
+            model_dict['mission'] = mission
 
-        threading.Thread(target=train_scheduler, args=(
-            app, socketio, filepath, models, mission, label, model_dict)).start()
-        return jsonify(status=http.HTTPStatus.OK)
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(
+                    train_scheduler,
+                    app, socketio, filepath, models, mission, label, model_dict
+                )
+                return_val = future.result()  # This will raise any exceptions that occurred.
+            return jsonify(status=http.HTTPStatus.OK)
+        except Exception as e:
+            err_msg = f"Exception occurred: {str(e)}\n{traceback.format_exc()}"
+            app.logger.error(err_msg)
+            return jsonify(message=err_msg, status=http.HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @app.route('/save-model', methods=['Post'])
     def save_model():
@@ -55,9 +66,13 @@ def init_train_routes(app, socketio):
         model_save_path_list = []
         # 保存模型
         for index, model_name in enumerate(model_names):
-            model_save_path = os.path.join(Config.MODEL_FOLDER[model_dict['mission']], model_classes[index], model_name + '.joblib')
-            app.logger.info(model_dict[model_classes[index]])
-            joblib.dump(model_dict[model_classes[index]], model_save_path)
+            # app.logger.info(model_classes)
+            if model_classes[index] == 'mlp':
+                model_save_path = os.path.join(Config.MODEL_FOLDER[model_dict['mission']], model_classes[index], model_name + '.pt')
+                torch.save(model_dict[model_classes[index]], model_save_path)
+            else:
+                model_save_path = os.path.join(Config.MODEL_FOLDER[model_dict['mission']], model_classes[index], model_name + '.joblib')
+                joblib.dump(model_dict[model_classes[index]], model_save_path)
             model_save_path_list.append(model_save_path)
 
         cur_file_path = os.path.join(Config.UPLOAD_TMP_TRAIN_FOLDER, model_dict['filepath'])

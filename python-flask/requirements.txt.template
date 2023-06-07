@@ -16,5 +16,5 @@ xgboost==1.7.5
 matplotlib==3.5.2
 mlens==0.2.3
 # --find-links https://download.pytorch.org/whl/torch_stable.html
-# torch==2.0.0+cpu
+# torch==1.13+cpu
 {torch_package}
