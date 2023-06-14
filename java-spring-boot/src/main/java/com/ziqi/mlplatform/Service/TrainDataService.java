@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ziqi.mlplatform.Model.PredictData;
 import com.ziqi.mlplatform.Model.TrainData;
+import com.ziqi.mlplatform.Repository.ModelRepository;
 import com.ziqi.mlplatform.Repository.TrainDataRepository;
 import com.ziqi.mlplatform.dto.TrainDataResponse;
 import com.ziqi.mlplatform.dto.TrainDataWtoModelResponse;
@@ -24,6 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TrainDataService implements ITrainDataService {
     private final TrainDataRepository trainDataRepository;
+    private final ModelRepository modelRepository;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -63,11 +65,13 @@ public class TrainDataService implements ITrainDataService {
         try {
             Optional<TrainData> trainData = trainDataRepository.findById(id);
             if (trainData.isEmpty()) {
-                throw new OperationException("Predict data not found with id: " + id);
+                throw new OperationException("Train data not found with id: " + id);
             }
             String fileName = trainData.get().getFileName();
+            String filePath = trainData.get().getFilePath();
             Map<String, String> body = new HashMap<>();
             body.put("fileName", fileName);
+            body.put("filePath", filePath);
             ResponseEntity<String> response = restTemplate.postForEntity(
                     "http://flask:5001/delete-train-data",
                     body,
@@ -77,23 +81,27 @@ public class TrainDataService implements ITrainDataService {
                     if (!trainData.get().getTemplateName().isEmpty()) {
                         trainData.map(TrainData::getModels).get().forEach(model -> {
                             model.setTrainData(null);
+                            modelRepository.save(model);
                         });
                         trainData.map(trainData1 -> {
+                            trainData1.setFileName(null);
                             trainData1.setFilePath(null);
-                            trainData1.setFilePath(null);
+                            trainDataRepository.save(trainData1);
                             return null;
                         });
                     } else {
                         trainData.map(TrainData::getModels).get().forEach(model -> {
                             model.setTrainData(null);
+                            modelRepository.save(model);
                         });
                         trainDataRepository.deleteById(id);
                     }
                 } else {
                     if (!trainData.get().getTemplateName().isEmpty()) {
                         trainData.map(trainData1 -> {
+                            trainData1.setFileName(null);
                             trainData1.setFilePath(null);
-                            trainData1.setFilePath(null);
+                            trainDataRepository.save(trainData1);
                             return null;
                         });
                     } else {
@@ -170,9 +178,11 @@ public class TrainDataService implements ITrainDataService {
                 throw new OperationException("Predict data not found with id: " + id);
             }
             String fileName = trainData.get().getFileName();
+            String templatePath = trainData.get().getTemplatePath();
             Map<String, String> body = new HashMap<>();
             body.put("fileName", fileName);
             body.put("newName", newName);
+            body.put("templatePath", templatePath);
             ResponseEntity<String> response = restTemplate.postForEntity(
                     "http://flask:5001/rename-template",
                     body,
@@ -190,7 +200,7 @@ public class TrainDataService implements ITrainDataService {
                         .orElseThrow(() -> new OperationException("Predict data not found with id: " + id));
             }
         } catch (Exception e) {
-            throw new OperationException("Predict data not found with id: " + id);
+            throw new OperationException(e.getMessage());
         }
         return null;
     }

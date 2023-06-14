@@ -55,6 +55,7 @@ emits: ['putFilePath', 'putLabel', 'putExistedTrainData'],
     existedTrainData: {
       handler(newValue) {
         this.$emit('putExistedTrainData', newValue);
+        // console.log("New existedTrainData value:", newValue)
       },
       immediate: true,
     }

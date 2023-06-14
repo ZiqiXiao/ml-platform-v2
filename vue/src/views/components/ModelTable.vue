@@ -39,7 +39,7 @@
                 <span class="text-secondary text-xs font-weight-bold">{{ item.uploadFile ? item.uploadFile.templateName : '' }}</span>
               </td>
               <td class="align-middle text-center text-sm">
-                <button class="btn btn-sm btn-secondary" @click="renameField(item.id, tableData, 'templateName','train-data/update-template-name')">重命名</button>
+                <button class="btn btn-sm btn-secondary" @click="renameField(item.uploadFile.id, tableData, 'templateName','train-data/update-template-name')">重命名</button>
                 <button class="btn btn-sm btn-success" @click="downloadTemplate(item.uploadFile.templatePath, item.uploadFile.templateName)">下载</button>
               </td>
               <td>
@@ -117,7 +117,8 @@ export default {
             alert("名称已存在，请重新输入！");
             return;
           }
-          const response = await axios.post(serviceRoute['java-springboot']+`/${endpoint}`, {
+          // console.log('update model name url' + serviceRoute['java-springboot']['root']+`/${endpoint}`)
+          const response = await axios.post(serviceRoute['java-springboot']['root']+`/${endpoint}`, {
             id: modelId,
             newName: newName
           });
@@ -125,8 +126,14 @@ export default {
             // 返回成功消息
             alert("重命名成功！");
             // 更新视图中的数据
-            const itemToUpdate = tableData.find(item => item.id === modelId);
-            itemToUpdate[nameFiled] = newName;
+            if (nameFiled === 'modelName') {
+              const itemToUpdate = tableData.find(item => item.id === modelId);
+              itemToUpdate[nameFiled] = newName;
+            }
+            else {
+              const itemToUpdate = tableData.find(item => item.uploadFile.id === modelId);
+              itemToUpdate['uploadFile'][nameFiled] = newName;
+            }
           } else {
             alert("重命名失败，请重试！");
           }

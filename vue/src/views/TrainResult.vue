@@ -82,7 +82,7 @@ export default {
     this.filePath = this.$route.params.filePath;
     this.label = this.$route.params.label;
     this.mission = this.$route.params.mission;
-    if (this.$route.params.usingExistedTrainData) {
+    if (this.$route.params.usingExistedTrainData !== 'false') {
       this.existedTrainDataPath = this.$route.params.filePath;
     }
     Object.entries(this.model).forEach(([key,]) => {

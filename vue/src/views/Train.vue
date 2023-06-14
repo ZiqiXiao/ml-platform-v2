@@ -143,6 +143,7 @@ export default {
     async submitForm() {
       if (this.filePath && this.model && this.label) {
         try {
+          console.log('Before pushing to train', this.usingExistedTrainData);
           await router.push({
             name: 'Train Result',
             params: {

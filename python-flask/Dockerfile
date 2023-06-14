@@ -19,9 +19,9 @@ RUN apt-get update && \
 COPY requirements.txt.template .
 RUN echo "$(uname -m)" && \
     if [ "$(uname -m)" = "aarch64" ]; then \
-        sed 's|{torch_package}|torch==2.0.0|' requirements.txt.template > requirements.txt; \
+        sed 's|{torch_package}|torch==1.13|' requirements.txt.template > requirements.txt; \
     elif [ "$(uname -m)" = "x86_64" ]; then \
-        sed 's|{torch_package}|--find-links https://download.pytorch.org/whl/torch_stable.html \n torch==2.0.0+cpu|' requirements.txt.template > requirements.txt; \
+        sed 's|{torch_package}|--find-links https://download.pytorch.org/whl/torch_stable.html \n torch==1.13+cpu|' requirements.txt.template > requirements.txt; \
     fi
 
 # # Install the required packages

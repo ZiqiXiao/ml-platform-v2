@@ -64,8 +64,10 @@ public class PredictDataService implements IPredictDataService {
                 throw new OperationException("Predict data not found with id: " + id);
             }
             String fileName = predictData.get().getFileName();
+            String filePath = predictData.get().getFilePath();
             Map<String, String> body = new HashMap<>();
             body.put("fileName", fileName);
+            body.put("filePath", filePath);
             ResponseEntity<String> response = restTemplate.postForEntity(
                     "http://flask:5001/delete-predict-data",
                     body,
@@ -116,9 +118,11 @@ public class PredictDataService implements IPredictDataService {
                 throw new OperationException("Predict data not found with id: " + id);
             }
             String fileName = predictData.get().getFileName();
+            String filePath = predictData.get().getFilePath();
             Map<String, String> body = new HashMap<>();
             body.put("fileName", fileName);
             body.put("newName", newName);
+            body.put("filePath", filePath);
             ResponseEntity<String> response = restTemplate.postForEntity(
                     "http://flask:5001/rename-predict-data",
                     body,

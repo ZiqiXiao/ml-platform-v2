@@ -22,13 +22,17 @@ import SoftUIDashboard from "./soft-ui-dashboard";
 import Keycloak from "keycloak-js";
 
 
+const CURRENT_IP = import.meta.env.VITE_APP_CURRENT_IP;
+console.log('http://'+CURRENT_IP+':8081')
 
 // 创建一个新的 Keycloak 实例
 const keycloak = new Keycloak({
-  url: 'http://127.0.0.1:8081',  // 替换为你的 Keycloak 服务器地址
+  url: 'http://'+CURRENT_IP+':8081',
+  // url: 'http://207.148.66.16:8081',
   realm: 'vue',  // 替换为你的 realm
   clientId: 'vuejs',  // 替换为你的 client ID
-  redirectUri: 'http://127.0.0.1:3000/',  // 替换为你的应用的 URL
+  redirectUri: 'http://'+CURRENT_IP+':3000/',  // 替换为你的应用的 URL
+  // redirectUri: 'http://207.148.66.16:3000/',
   locale: 'zh',
 });
 

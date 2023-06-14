@@ -178,9 +178,11 @@ public class ModelService implements IModelService {
             }
             String modelName = model.get().getModelName();
             String modelClass = model.get().getModelClass();
+            String modelPath = model.get().getModelPath();
             Map<String, String> body = new HashMap<>();
             body.put("modelClass", modelClass);
             body.put("modelName", modelName);
+            body.put("modelPath", modelPath);
             ResponseEntity<String> response = restTemplate.postForEntity(
                     "http://flask:5001/delete-model",
                     body,
@@ -204,10 +206,12 @@ public class ModelService implements IModelService {
             }
             String modelName = model.get().getModelName();
             String modelClass = model.get().getModelClass();
+            String modelPath = model.get().getModelPath();
             Map<String, String> body = new HashMap<>();
             body.put("modelName", modelName);
             body.put("newName", newName);
             body.put("modelClass", modelClass);
+            body.put("modelPath", modelPath);
             ResponseEntity<String> response = restTemplate.postForEntity(
                     "http://flask:5001/rename-model",
                     body,

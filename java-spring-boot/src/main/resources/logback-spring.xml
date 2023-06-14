@@ -2,13 +2,13 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/app/src/main/resources/log/app.log</file> <!--指定日志的位置-->
+        <file>/logs/app.log</file> <!--指定日志的位置-->
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>/app/src/main/resources/log/app-%d{yyyy-MM-dd}.log</fileNamePattern> <!--设置日志文件重命名的模式-->
+            <fileNamePattern>/logs/app-%d{yyyy-MM-dd}.log</fileNamePattern> <!--设置日志文件重命名的模式-->
             <!-- keep 30 days' log history -->
             <maxHistory>30</maxHistory>
         </rollingPolicy>

@@ -344,7 +344,7 @@ export default {
             this.filePath = this.uploadedTmpPath + "/" + this.uploadedFile.name;
             if (window.confirm(`${response.data.message}文件已存在，是否覆盖？`)) {
               formData.set('overwrite', true)
-              console.log(formData)
+              // console.log(formData)
               axios
                 .post(serviceRoute["python-flask"] + "/upload", formData, {
                   headers: {

@@ -7,7 +7,8 @@
       </div>
       <div v-if="algorithm.checked && algorithm.params.length > 0 && algorithm.algorithmName !== 'sl'" class="card-body">
         <div v-for="(param, paramIndex) in algorithm.params" :key="paramIndex" class="input-container">
-          <label class="param-name">{{ paramName[mission][algorithm.algorithmName][param.name] }}</label>
+          <i class="fa fa-question-circle" :title=paramName[mission][algorithm.algorithmName][param.name][explain] style="vertical-align: middle;"></i>
+          <label class="param-name">{{ paramName[mission][algorithm.algorithmName][param.name]['name'] }}</label>
           <input v-model="param.value" :type="param.type" />
         </div>
       </div>
@@ -16,8 +17,9 @@
           <label class="param-name-mul">{{ modelName[mission][learner.learnerName] }}</label>
           <div style="display: block; margin-left: 100px">
             <div v-for="(param, paramIndex) in learner.params" :key="paramIndex" class="input-container">
-                <label class="param-name-sub">{{ paramName[mission][algorithm.algorithmName][learner.learnerName][param.name] }}</label>
-                <input v-model="param.value" :type="param.type" style="width: 100px; height: 20px; margin-left: 5px;"/>
+              <i class="fa fa-question-circle" :title=paramName[mission][algorithm.algorithmName][learner.learnerName][param.name][explain] style="vertical-align: middle;"></i>
+              <label class="param-name-sub">{{ paramName[mission][algorithm.algorithmName][learner.learnerName][param.name]['name'] }}</label>
+              <input v-model="param.value" :type="param.type" style="width: 100px; height: 20px; margin-left: 5px;"/>
             </div>
           </div>
         </div>
@@ -52,6 +54,7 @@ export default {
       modelName: ModelName,
       paramName: ParamName,
       model: null,
+      explain: "explain",
     };
   },
 

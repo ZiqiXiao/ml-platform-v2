@@ -1,10 +1,12 @@
+const CURRENT_IP = import.meta.env.VITE_APP_CURRENT_IP;
+
 export default {
-  "python-flask": "http://127.0.0.1:5001",
+  "python-flask": "http://"+CURRENT_IP+":5001",
   "java-springboot": {
-    "root": "http://127.0.0.1:8080",
-    "model": "http://127.0.0.1:8080/model",
-    "train-data": "http://127.0.0.1:8080/train-data",
-    "predict-data": "http://127.0.0.1:8080/predict-data",
+    "root": "http://"+CURRENT_IP+":8080",
+    "model": "http://"+CURRENT_IP+":8080/model",
+    "train-data": "http://"+CURRENT_IP+":8080/train-data",
+    "predict-data": "http://"+CURRENT_IP+":8080/predict-data",
   }
 
 };

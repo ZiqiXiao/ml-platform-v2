@@ -104,6 +104,7 @@ export default {
   },
 
   computed: {
+
   },
 
   watch: {
@@ -127,8 +128,12 @@ export default {
     },
   },
 
+  created() {
+
+  },
+
   mounted() {
-    // console.log(this.metricsSum);
+    console.log(this.existedTrainDataPath.length);
   },
 
   methods: {

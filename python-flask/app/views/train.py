@@ -1,4 +1,5 @@
 import http
+import os.path
 import shutil
 from concurrent.futures import ThreadPoolExecutor
 
@@ -103,7 +104,7 @@ def init_train_routes(app, socketio):
     @app.route('/delete-train-data', methods=['POST'])
     def delete_train_data():
         file_name = request.get_json()['fileName']
-        file_path = os.path.join(Config.UPLOAD_TRAIN_FOLDER, file_name + '.csv')
+        file_path = request.get_json()['filePath']
         if os.path.exists(file_path):
             os.remove(file_path)
             return jsonify(message={'message': 'File removed successfully'}), http.HTTPStatus.OK
@@ -126,24 +127,25 @@ def init_train_routes(app, socketio):
     def rename_template():
         file_name = request.get_json()['fileName']
         new_file_name = request.get_json()['newName']
-        file_path = os.path.join(Config.TEMPLATE_FOLDER, file_name + '.csv')
-        new_file_path = os.path.join(Config.TEMPLATE_FOLDER, new_file_name + '.csv')
+        file_path = request.get_json()['templatePath']
+        new_file_path = os.path.split(file_path)[0] + '/' + new_file_name + '.csv'
         if os.path.exists(file_path):
             os.rename(file_path, new_file_path)
             return jsonify(message={'message': 'File renamed successfully'}, newPath=new_file_path), http.HTTPStatus.OK
         else:
-            return jsonify(massage={'message': 'File not found'}, newPath=new_file_path), http.HTTPStatus.NOT_FOUND
+            return jsonify(massage={'message': 'File not found'}, file_path=file_path), http.HTTPStatus.NOT_FOUND
 
     @app.route('/rename-model', methods=['POST'])
     def rename_model():
         model_name = request.get_json()['modelName']
         new_model_name = request.get_json()['newName']
         model_class = request.get_json()['modelClass']
-        mission = request.get_json()['mission']
-        file_path = os.path.join(Config.MODEL_FOLDER[mission], model_class, model_name + '.joblib')
-        new_file_path = os.path.join(Config.MODEL_FOLDER[mission], model_class, new_model_name + '.joblib')
-        if os.path.exists(file_path):
-            os.rename(file_path, new_file_path)
+        model_path = request.get_json()['modelPath']
+
+        # file_path = os.path.join(Config.MODEL_FOLDER[mission], model_class, model_name + '.joblib')
+        new_file_path = os.path.split(model_path)[0] + '/' + new_model_name + '.joblib'
+        if os.path.exists(model_path):
+            os.rename(model_path, new_file_path)
             return jsonify(message={'message': 'File renamed successfully'}, newPath=new_file_path), http.HTTPStatus.OK
         else:
             return jsonify(massage={'message': 'File not found'}, newPath=new_file_path), http.HTTPStatus.NOT_FOUND
@@ -152,10 +154,10 @@ def init_train_routes(app, socketio):
     def delete_model():
         model_name = request.get_json()['modelName']
         model_class = request.get_json()['modelClass']
-        mission = request.get_json()['mission']
-        file_path = os.path.join(Config.MODEL_FOLDER[mission], model_class, model_name + '.joblib')
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        model_path = request.get_json()['modelPath']
+        # file_path = os.path.join(Config.MODEL_FOLDER[mission], model_class, model_name + '.joblib')
+        if os.path.exists(model_path):
+            os.remove(model_path)
             return jsonify(message={'message': 'File removed successfully'}), http.HTTPStatus.OK
         else:
             return jsonify(massage={'message': 'File not found'}), http.HTTPStatus.NOT_FOUND

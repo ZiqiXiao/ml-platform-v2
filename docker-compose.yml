@@ -8,11 +8,12 @@ services:
       - ./java-spring-boot:/app
       - ./data/logs/spring-boot:/app/src/main/resources/log
     working_dir: /app
-    command: "./mvnw spring-boot:run -Dspring-boot.run.profiles=dev"
+    command: "./mvnw spring-boot:run -D spring-boot.run.profiles=dev"
     ports:
       - "8080:8080"
     environment:
       - TZ=Asia/Shanghai
+      - CURRENT_IP=${CURRENT_IP}
     depends_on:
       - mysql
     networks:
@@ -42,6 +43,7 @@ services:
       - CORS_ALLOWED_ORIGINS=*
       - JAVA_SERVICE_URL=http://spring-boot:8080
       - VUE_SERVICE_URL=http://vue:3000
+      - CURRENT_IP=${CURRENT_IP}
     ports:
       - "5001:5001"
     volumes:
@@ -61,6 +63,7 @@ services:
       - JAVA_SERVICE_URL=http://spring-boot:8080
       - FLASK_SERVICE_URL=http://flask:5001
       - TZ=Asia/Shanghai
+      - VITE_APP_CURRENT_IP=${CURRENT_IP}
     volumes:
       - ./vue:/app
       - /app/node_modules

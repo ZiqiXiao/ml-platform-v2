@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, session
 from flask_session import Session
 from flask_cors import CORS
@@ -6,6 +8,9 @@ from flask_socketio import SocketIO, Namespace
 
 from app.views import init_routes
 from app.utils.log_utils import setup_logger
+
+current_ip = os.environ.get("CURRENT_IP")
+print(current_ip)
 
 
 def create_app(config_class=Config):
@@ -20,9 +25,9 @@ def create_app(config_class=Config):
 
     app.config.from_object(config_class)
     app.secret_key = config_class.SECRET_KEY
-    CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:3000", "methods": ["GET", "POST", "PUT", "DELETE"]}})
+    CORS(app, resources={r"/*": {"origins": f"http://{current_ip}:3000", "methods": ["GET", "POST", "PUT", "DELETE"]}})
     # CORS(app, resources={r'*': {'origins': '*'}})
-    socketio = SocketIO(app, cors_allowed_origins="http://127.0.0.1:3000")
+    socketio = SocketIO(app, cors_allowed_origins=f"http://{current_ip}:3000")
     # socketio = SocketIO(app)
 
     # Setup logging
@@ -35,6 +40,6 @@ def create_app(config_class=Config):
 
     @app.route('/test')
     def test_page():
-        return '<h1>I am rich</h1>'
+        return f'<h1>I am rich {current_ip}</h1>'
 
     return app, socketio
