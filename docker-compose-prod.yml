@@ -1,0 +1,92 @@
+version: "3.8"
+
+services:
+  spring-boot:
+    image: ziqix/ml-platform:spring-boot-0.2.0
+    container_name: spring-boot
+    volumes:
+      - ./data/logs/spring-boot:/logs
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=Asia/Shanghai
+      - CURRENT_IP=${CURRENT_IP}
+    depends_on:
+      - mysql
+    networks:
+      - keycloak-network
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+      TZ: Asia/Shanghai
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - keycloak-network
+
+  flask:
+    image: ziqix/ml-platform:flask-0.2.0
+    container_name: flask
+    environment:
+      - TZ=Asia/Shanghai
+      - CORS_ALLOWED_ORIGINS=*
+      - JAVA_SERVICE_URL=http://spring-boot:8080
+      - VUE_SERVICE_URL=http://vue:3000
+      - FLASK_APP=ml.py
+      - CURRENT_IP=${CURRENT_IP}
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - keycloak-network
+
+
+  vue:
+    image: ziqix/ml-platform:vue-0.2.0
+    container_name: vue
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    environment:
+      - JAVA_SERVICE_URL=http://spring-boot:8080
+      - FLASK_SERVICE_URL=http://flask:5001
+      - TZ=Asia/Shanghai
+      - VITE_APP_CURRENT_IP=${CURRENT_IP}
+    volumes:
+      - ./data/tmp/:/app/data/tmp
+    networks:
+      - keycloak-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    environment:
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://mysql:3306/test
+      KC_DB_USERNAME: test
+      KC_DB_PASSWORD: test
+      KC_DB_DATABASE: test
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_LOG_LEVEL: DEBUG
+      KEYCLOAK_DEFAULT_LANGUAGE: zh
+      TZ: Asia/Shanghai
+      KC_HOSTNAME_STRICT_HTTPS: false
+    ports:
+      - "8081:8080"
+    command: start-dev
+    depends_on:
+      - mysql
+    networks:
+      - keycloak-network
+
+networks:
+    keycloak-network:
