@@ -17,11 +17,13 @@ public class MlPlatformApplication {
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		String currentIp = System.getenv("CURRENT_IP");
+		System.out.println("currentIp: "+currentIp);
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**")
 						.allowedOrigins("http://"+currentIp+":3000")
+						.allowedOrigins("*")
 						.allowedMethods("*")
 						.allowedHeaders("*");
 			}

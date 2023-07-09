@@ -14,7 +14,7 @@
           </thead>
           <tbody>
           <tr v-for="(row, index) in predictResult" :key="index" class="align-middle text-center text-sm">
-            <td>{{ index }}</td>
+            <td>{{ index + 1 }}</td>
             <td>{{ row }}</td>
           </tr>
           </tbody>

@@ -22,6 +22,7 @@
             <td v-if="item.fileName" class="align-middle text-center text-sm">
               <button class="btn btn-sm btn-secondary" @click="renameField(item.id, tableData, 'fileName',)">重命名</button>
               <button class="btn btn-sm btn-danger" @click="deleteModel(item.id)">删除</button>
+              <button class="btn btn-sm btn-success" @click="download(item.filePath, item.fileName)">下载</button>
             </td>
           </tr>
           </tbody>
@@ -138,9 +139,24 @@ export default {
       }
     },
 
-    // async downloadTemplate(modelId) {
-    //   //   TODO: 下载模板
-    // }
+    async download(filePath, fileName) {
+      await axios.post(serviceRoute['python-flask'] + '/download-train-file', {
+        filePath: filePath}, {
+        responseType: 'blob'
+      }).then(res => {
+        if (res.status === 200) {
+          const url = window.URL.createObjectURL(new Blob([res.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', fileName+'.csv'); // 设置你期望的文件名
+          document.body.appendChild(link);
+          link.click();
+          console.log('download template success')
+        } else {
+          alert('下载失败')
+        }
+      })
+    }
   },
 
 }

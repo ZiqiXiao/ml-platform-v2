@@ -40,6 +40,7 @@ class Model:
         self.default_params.update(custom_params)
         train_size = self.default_params.get(
             'train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
+        self.default_params.pop('train_size')
         print(train_size)
 
         # 对数据集进行预处理，例如划分训练集和验证集

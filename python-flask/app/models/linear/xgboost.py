@@ -62,7 +62,7 @@ class Model:
         num_boost_round = self.default_params.pop('num_boost_round')
         train_size = self.default_params.get(
             'train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
-
+        self.default_params.pop('train_size')
         # 加载数据集
         dataset = load_dataset(dataset_path)
 
@@ -97,6 +97,7 @@ class Model:
 
         self.metric_data.update({"metrics": [train_metrics, valid_metrics]})
         self.metric_data.update({'featureImportance': cal_feature_importance(self.model)})
+        self.app.logger.info(cal_feature_importance(self.model))
         self.socketio.emit('eval-message', self.metric_data)
 
         # print('training successfully')

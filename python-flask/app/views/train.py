@@ -69,10 +69,12 @@ def init_train_routes(app, socketio):
         for index, model_name in enumerate(model_names):
             # app.logger.info(model_classes)
             if model_classes[index] == 'mlp':
-                model_save_path = os.path.join(Config.MODEL_FOLDER[model_dict['mission']], model_classes[index], model_name + '.pt')
+                model_save_path = os.path.join(Config.MODEL_FOLDER[model_dict['mission']], model_classes[index],
+                                               model_name + '.pt')
                 torch.save(model_dict[model_classes[index]], model_save_path)
             else:
-                model_save_path = os.path.join(Config.MODEL_FOLDER[model_dict['mission']], model_classes[index], model_name + '.joblib')
+                model_save_path = os.path.join(Config.MODEL_FOLDER[model_dict['mission']], model_classes[index],
+                                               model_name + '.joblib')
                 joblib.dump(model_dict[model_classes[index]], model_save_path)
             model_save_path_list.append(model_save_path)
 
@@ -169,5 +171,15 @@ def init_train_routes(app, socketio):
         if os.path.exists(template_path):
             app.logger.info(f"Download predict result: {template_path}")
             return send_file(template_path, as_attachment=True)
+        else:
+            return jsonify(message='Predict result not found'), http.HTTPStatus.NOT_FOUND
+
+    @app.route('/download-train-file', methods=['POST'])
+    def download_train_file():
+        print(request.get_json())
+        file_path = request.get_json()['filePath']
+        if os.path.exists(file_path):
+            app.logger.info(f"Download Train Data: {file_path}")
+            return send_file(file_path, as_attachment=True)
         else:
             return jsonify(message='Predict result not found'), http.HTTPStatus.NOT_FOUND

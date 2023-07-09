@@ -9,16 +9,16 @@ def init_upload_routes(app, socketio):
     def upload():
         file = request.files['file']
         path = request.form['path']
-        overwrite = request.form['overwrite']
-        print(overwrite)
+        # overwrite = request.form['overwrite']
+        # print(overwrite)
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
 
-            if os.path.exists(os.path.join(path, filename)) and overwrite == 'false':
-                warnings_msg = f"File already exists: {filename}"
-                app.logger.warning(warnings_msg)
-                return jsonify(status=http.HTTPStatus.CONFLICT, message=warnings_msg)
+            # if os.path.exists(os.path.join(path, filename)) and overwrite == 'false':
+            #     warnings_msg = f"File already exists: {filename}"
+            #     app.logger.warning(warnings_msg)
+            #     return jsonify(status=http.HTTPStatus.CONFLICT, message=warnings_msg)
 
             file.save(os.path.join(path, filename))
             app.logger.info(f"File uploaded: {filename}")

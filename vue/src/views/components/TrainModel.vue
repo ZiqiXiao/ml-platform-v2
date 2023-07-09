@@ -7,9 +7,9 @@
       </div>
       <div v-if="algorithm.checked && algorithm.params.length > 0 && algorithm.algorithmName !== 'sl'" class="card-body">
         <div v-for="(param, paramIndex) in algorithm.params" :key="paramIndex" class="input-container">
-          <i class="fa fa-question-circle" :title=paramName[mission][algorithm.algorithmName][param.name][explain] style="vertical-align: middle;"></i>
-          <label class="param-name">{{ paramName[mission][algorithm.algorithmName][param.name]['name'] }}</label>
-          <input v-model="param.value" :type="param.type" />
+          <i class="fa fa-question-circle" :title=paramName[mission][algorithm.algorithmName][param.name][explain]></i>
+          <label class="param-name">{{ paramName[mission][algorithm.algorithmName][param.name].name }}</label>
+          <input v-model="param.value" :type="param.type"/>
         </div>
       </div>
       <div v-else-if="algorithm.checked && algorithm.params.length > 0 && algorithm.algorithmName === 'sl'" class="card-body">

@@ -25,7 +25,8 @@ RUN echo "$(uname -m)" && \
     fi
 
 # # Install the required packages
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Copy the rest of the application code into the container
 COPY . .

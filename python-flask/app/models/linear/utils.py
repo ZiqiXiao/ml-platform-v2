@@ -50,6 +50,12 @@ def cal_feature_importance(model):
         fi_df = fi_df.sort_values(by='importance', ascending=True)
         plt.barh(fi_df.feature, fi_df.importance)
 
+    plt.tight_layout()
+    plt.plot()
+    save_path = f"data/tmp/feature_importance/{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}-feature_importance.png"
+    plt.savefig(save_path)
+    return save_path
+
 
 def cal_metrics(y_true, y_pred_proba, type='train'):
     acc = cal_acc(y_true, y_pred_proba)

@@ -58,7 +58,7 @@ const routes = [
     path: "/TrainDataset",
     name: "TrainDataset",
     component: TrainDataset,
-    meta: { roles: ["admin"] }
+    meta: { roles: ["admin", "train"] }
   },
   {
     path: "/PredictDataset",

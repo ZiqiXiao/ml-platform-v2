@@ -42,6 +42,7 @@
         <th scope="col">检查名称</th>
         <th scope="col">检查结果</th>
         <th scope="col">模型描述</th>
+        <th scope="col">操作</th>
       </tr>
       </thead>
       <tbody>
@@ -55,6 +56,9 @@
           <i v-else-if="checkboxStatus[index] && nameCheckStatus[index] === 'invalid'" class="fas fa-times">：名字已存在</i>
         </td>
         <td><input v-show="checkboxStatus[index]" v-model="modelDescription[index]" type="text" placeholder="请输入模型的重要相关信息"/></td>
+        <td>
+          <button class="btn btn-sm btn-primary" :disabled="!checkboxStatus[index]" @click="fillModelDescription(index)">填充</button> <!-- 新增的按钮 -->
+        </td>
       </tr>
       </tbody>
     </table>
@@ -133,10 +137,14 @@ export default {
   },
 
   mounted() {
-    console.log(this.existedTrainDataPath.length);
   },
 
   methods: {
+    fillModelDescription(index) {
+      const metricObj = this.metricsSum[index];
+      const metricInfo = JSON.stringify(metricObj);
+      this.modelDescription[index] = metricInfo;
+    },
     async checkName(index) {
       const modelSaveName = this.modelSaveName[index];
       console.log(modelSaveName)

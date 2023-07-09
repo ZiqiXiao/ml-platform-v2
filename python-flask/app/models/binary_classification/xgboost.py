@@ -62,6 +62,7 @@ class Model:
         num_boost_round = self.default_params.pop('num_boost_round')
         train_size = self.default_params.get(
             'train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
+        self.default_params.pop('train_size')
 
         # 加载数据集
         dataset = load_dataset(dataset_path)

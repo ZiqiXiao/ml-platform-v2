@@ -39,9 +39,10 @@ class Model:
 
         # 设置模型参数
         self.default_params.update(custom_params)
-        train_size = self.default_params.get(
+        train_size = self.default_params['rf'].get(
             'train_size', Config.DEFAULT_OTHER_PARAMS['train_size'])
         print(train_size)
+        self.default_params['rf'].pop('train_size')
 
         # 对数据集进行预处理，例如划分训练集和验证集
         train_X, valid_X, train_y, valid_y = data_preprocess(
